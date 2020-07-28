@@ -264,6 +264,7 @@ function checkComponents(options: Object) {
   }
 }
 
+// 检查组件名称的是否合法
 export function validateComponentName(name: string) {
   if (!new RegExp(`^[a-zA-Z][\\-\\.0-9_${unicodeRegExp.source}]*$`).test(name)) {
     warn(
@@ -279,10 +280,7 @@ export function validateComponentName(name: string) {
   }
 }
 
-/**
- * Ensure all props option syntax are normalized into the
- * Object-based format.
- */
+// 将props标准化，转换为:{props: {type: 类型名称}}，若props为数组，则类型名称为null
 function normalizeProps(options: Object, vm: ?Component) {
   const props = options.props;
   if (!props) return;
@@ -293,7 +291,7 @@ function normalizeProps(options: Object, vm: ?Component) {
     while (i--) {
       val = props[i];
       if (typeof val === "string") {
-        name = camelize(val);
+        name = camelize(val); // 将-连词符改为驼峰
         res[name] = {type: null};
       } else if (process.env.NODE_ENV !== "production") {
         warn("props must be strings when using array syntax.");
@@ -386,7 +384,7 @@ export function mergeOptions(
     child = child.options;
   }
 
-  normalizeProps(child, vm);
+  normalizeProps(child, vm);  // 将props标准化
   normalizeInject(child, vm);
   normalizeDirectives(child);
 
