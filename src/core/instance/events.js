@@ -49,8 +49,10 @@ export function updateComponentListeners (
   target = undefined
 }
 
+// 混入事件
 export function eventsMixin (Vue: Class<Component>) {
-  const hookRE = /^hook:/
+  const hookRE = /^hook:/ // 钩子函数前缀为hook:
+  // 事件监听
   Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {
     const vm: Component = this
     if (Array.isArray(event)) {
@@ -58,9 +60,9 @@ export function eventsMixin (Vue: Class<Component>) {
         vm.$on(event[i], fn)
       }
     } else {
+      // 事件缓存
       (vm._events[event] || (vm._events[event] = [])).push(fn)
-      // optimize hook:event cost by using a boolean flag marked at registration
-      // instead of a hash lookup
+      // 标记是否存在钩子函数
       if (hookRE.test(event)) {
         vm._hasHookEvent = true
       }
@@ -68,6 +70,7 @@ export function eventsMixin (Vue: Class<Component>) {
     return vm
   }
 
+  // 仅执行一次事件
   Vue.prototype.$once = function (event: string, fn: Function): Component {
     const vm: Component = this
     function on () {
@@ -75,13 +78,14 @@ export function eventsMixin (Vue: Class<Component>) {
       fn.apply(vm, arguments)
     }
     on.fn = fn
-    vm.$on(event, on)
+    vm.$on(event, on) // 监听后，执行on回调，移除该监听事件，并执行fn回调
     return vm
   }
 
+  // 注销事件
   Vue.prototype.$off = function (event?: string | Array<string>, fn?: Function): Component {
     const vm: Component = this
-    // all
+    // 不设置参数，则将对象中的事件缓存删除
     if (!arguments.length) {
       vm._events = Object.create(null)
       return vm
@@ -89,15 +93,16 @@ export function eventsMixin (Vue: Class<Component>) {
     // array of events
     if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
-        vm.$off(event[i], fn)
+        vm.$off(event[i], fn) // 递归
       }
       return vm
     }
     // specific event
-    const cbs = vm._events[event]
+    const cbs = vm._events[event]   // 缓存事件回调
     if (!cbs) {
       return vm
     }
+    // 未设置fn，则将事件名称对应的所有缓存删除
     if (!fn) {
       vm._events[event] = null
       return vm
@@ -105,6 +110,7 @@ export function eventsMixin (Vue: Class<Component>) {
     // specific handler
     let cb
     let i = cbs.length
+    // 若设置了fn，则将对应的fn移除
     while (i--) {
       cb = cbs[i]
       if (cb === fn || cb.fn === fn) {
@@ -115,6 +121,7 @@ export function eventsMixin (Vue: Class<Component>) {
     return vm
   }
 
+  // 触发事件
   Vue.prototype.$emit = function (event: string): Component {
     const vm: Component = this
     if (process.env.NODE_ENV !== 'production') {
@@ -135,7 +142,7 @@ export function eventsMixin (Vue: Class<Component>) {
       const args = toArray(arguments, 1)
       const info = `event handler for "${event}"`
       for (let i = 0, l = cbs.length; i < l; i++) {
-        invokeWithErrorHandling(cbs[i], vm, args, vm, info)
+        invokeWithErrorHandling(cbs[i], vm, args, vm, info) // 执行回调
       }
     }
     return vm

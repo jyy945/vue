@@ -9,6 +9,7 @@ const version = process.env.VERSION || require('../package.json').version
 const weexVersion = process.env.WEEX_VERSION || require('../packages/weex-vue-framework/package.json').version
 const featureFlags = require('./feature-flags')
 
+// banner信息
 const banner =
   '/*!\n' +
   ` * Vue.js v${version}\n` +
@@ -25,7 +26,7 @@ const weexFactoryPlugin = {
   }
 }
 
-const aliases = require('./alias')
+const aliases = require('./alias')  // 项目别名
 const resolve = p => {
   const base = p.split('/')[0]
   if (aliases[base]) {

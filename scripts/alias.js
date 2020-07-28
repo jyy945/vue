@@ -1,7 +1,6 @@
 const path = require('path')
-
-const resolve = p => path.resolve(__dirname, '../', p)
-
+const resolve = p => path.resolve(__dirname, '../', p)  // 设置src绝对路径
+// 别名
 module.exports = {
   vue: resolve('src/platforms/web/entry-runtime-with-compiler'),
   compiler: resolve('src/compiler'),

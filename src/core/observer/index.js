@@ -198,17 +198,20 @@ export function defineReactive (
  * triggers change notification if the property doesn't
  * already exist.
  */
+// 向target中添加属性key，值为val
 export function set (target: Array<any> | Object, key: any, val: any): any {
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 若target为数组，则插入
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
     target.splice(key, 1, val)
     return val
   }
+  // key为target实例属性
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val

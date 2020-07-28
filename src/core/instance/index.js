@@ -1,23 +1,23 @@
-import { initMixin } from './init'
-import { stateMixin } from './state'
-import { renderMixin } from './render'
-import { eventsMixin } from './events'
-import { lifecycleMixin } from './lifecycle'
-import { warn } from '../util/index'
+import { warn } from "../util/index";
+import { eventsMixin } from "./events";
+import { initMixin } from "./init";
+import { lifecycleMixin } from "./lifecycle";
+import { renderMixin } from "./render";
+import { stateMixin } from "./state";
 
-function Vue (options) {
-  if (process.env.NODE_ENV !== 'production' &&
+function Vue(options) {
+  if (process.env.NODE_ENV !== "production" &&
     !(this instanceof Vue)
   ) {
-    warn('Vue is a constructor and should be called with the `new` keyword')
+    warn("Vue is a constructor and should be called with the `new` keyword");
   }
-  this._init(options)
+  this._init(options);
 }
 
-initMixin(Vue)
-stateMixin(Vue)
-eventsMixin(Vue)
-lifecycleMixin(Vue)
-renderMixin(Vue)
+initMixin(Vue);  // 混入init
+stateMixin(Vue); // 混入状态
+eventsMixin(Vue);  // 混入事件系统
+lifecycleMixin(Vue);   // 混入生命周期系统
+renderMixin(Vue);  // 混入渲染系统
 
-export default Vue
+export default Vue;
