@@ -34,6 +34,9 @@ if (process.env.NODE_ENV !== "production") {
 /**
  * Helper that recursively merges two data objects together.
  */
+// 合并两个data，
+// 若第一个data不包含第二个中的属性，则使用set放入第一个data；
+// 若二者的属性值为对象，且不相等，则递归
 function mergeData(to: Object, from: ?Object): Object {
   if (!from) return to;
   let key, toVal, fromVal;
@@ -61,9 +64,7 @@ function mergeData(to: Object, from: ?Object): Object {
   return to;
 }
 
-/**
- * Data
- */
+// 合并data或函数
 export function mergeDataOrFn(
   parentVal: any,
   childVal: any,
@@ -106,6 +107,7 @@ export function mergeDataOrFn(
   }
 }
 
+// 合并data策略
 strats.data = function (
   parentVal: any,
   childVal: any,
@@ -128,9 +130,8 @@ strats.data = function (
   return mergeDataOrFn(parentVal, childVal, vm);
 };
 
-/**
- * Hooks and props are merged as arrays.
- */
+// 合并钩子函数，
+// 将child钩子拼接到parent钩子中
 function mergeHook(
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
@@ -143,10 +144,11 @@ function mergeHook(
                   : [childVal]
               : parentVal;
   return res
-         ? dedupeHooks(res)
+         ? dedupeHooks(res) // 钩子去重
          : res;
 }
 
+// 将相同的钩子函数去掉
 function dedupeHooks(hooks) {
   const res = [];
   for (let i = 0; i < hooks.length; i++) {
@@ -157,17 +159,13 @@ function dedupeHooks(hooks) {
   return res;
 }
 
+// 设置合并生命周期函数策略
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook;
 });
 
-/**
- * Assets
- *
- * When a vm is present (instance creation), we need to do
- * a three-way merge between constructor options, instance
- * options and parent options.
- */
+//components、directives、filetersd的合并
+// 直接将child的属性放到parent中，若存在相同则覆盖
 function mergeAssets(
   parentVal: ?Object,
   childVal: ?Object,
@@ -183,6 +181,7 @@ function mergeAssets(
   }
 }
 
+// 设置components、directives、filetersd的合并策略
 ASSET_TYPES.forEach(function (type) {
   strats[type + "s"] = mergeAssets;
 });
@@ -315,9 +314,7 @@ function normalizeProps(options: Object, vm: ?Component) {
   options.props = res;
 }
 
-/**
- * Normalize all injections into Object-based format
- */
+// 将inject标准化，转换为:{inject名称: {from: inject值, .....}}
 function normalizeInject(options: Object, vm: ?Component) {
   const inject = options.inject;
   if (!inject) return;
@@ -342,9 +339,7 @@ function normalizeInject(options: Object, vm: ?Component) {
   }
 }
 
-/**
- * Normalize raw function directives into object format.
- */
+// 将局部directives标准化, 转换为{指令名称: {bind: fn, update, fn}}
 function normalizeDirectives(options: Object) {
   const dirs = options.directives;
   if (dirs) {
@@ -385,8 +380,8 @@ export function mergeOptions(
   }
 
   normalizeProps(child, vm);  // 将props标准化
-  normalizeInject(child, vm);
-  normalizeDirectives(child);
+  normalizeInject(child, vm); // 将inject标准化
+  normalizeDirectives(child); // 将局部directives标准化
 
   // Apply extends and mixins on the child options,
   // but only if it is a raw options object that isn't

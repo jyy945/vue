@@ -52,6 +52,7 @@ export const isServerRendering = () => {
 }
 
 // detect devtools
+/** @namespace window.__VUE_DEVTOOLS_GLOBAL_HOOK__ */
 export const devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__
 
 /* istanbul ignore next */

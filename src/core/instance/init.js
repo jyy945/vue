@@ -48,9 +48,9 @@ export function initMixin(Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm;
-    initLifecycle(vm);
+    initLifecycle(vm);  // 初始化生命周期
     initEvents(vm);
-    initRender(vm);
+    initRender(vm); // 初始化渲染器
     callHook(vm, "beforeCreate");
     initInjections(vm); // resolve injections before data/props
     initState(vm);
