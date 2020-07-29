@@ -16,7 +16,7 @@ let uid = 0;
 export function initMixin(Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this;
-    // a uid
+    // vue对象id
     vm._uid = uid++;
 
     let startTag, endTag;
@@ -51,7 +51,7 @@ export function initMixin(Vue: Class<Component>) {
     initLifecycle(vm);  // 初始化生命周期
     initEvents(vm);
     initRender(vm); // 初始化渲染器
-    callHook(vm, "beforeCreate");
+    callHook(vm, "beforeCreate"); // beforeCreate 钩子函数执行
     initInjections(vm); // resolve injections before data/props
     initState(vm);
     initProvide(vm); // resolve provide after data/props

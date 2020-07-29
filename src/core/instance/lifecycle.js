@@ -327,6 +327,7 @@ export function deactivateChildComponent(vm: Component, direct?: boolean) {
   }
 }
 
+// 钩子函数回调
 export function callHook(vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget();

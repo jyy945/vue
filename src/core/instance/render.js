@@ -11,7 +11,7 @@ import { installRenderHelpers } from "./render-helpers/index";
 import { resolveSlots } from "./render-helpers/resolve-slots";
 
 export function initRender(vm: Component) {
-  vm._vnode = null; // 子组件数的跟节点 the root of the child tree
+  vm._vnode = null; // 子组件树的跟节点
   vm._staticTrees = null; // v-once cached trees
   const options = vm.$options;
   const parentVnode = vm.$vnode = options._parentVnode; // the placeholder node in parent tree
