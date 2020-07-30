@@ -148,10 +148,12 @@ export function hasOwn (obj: Object | Array<*>, key: string): boolean {
 /**
  * Create a cached version of a pure function.
  */
+
+// 缓存代理模式，将使用过的方法进行缓存
 export function cached<F: Function> (fn: F): F {
   const cache = Object.create(null)
   return (function cachedFn (str: string) {
-    const hit = cache[str]
+    const hit = cache[str] // 若已经缓存过该方法，则shi
     return hit || (cache[str] = fn(str))
   }: any)
 }
@@ -171,10 +173,9 @@ export const capitalize = cached((str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 })
 
-/**
- * Hyphenate a camelCase string.
- */
+// 将单词转换为以-为连字符的单词，如abcd => a-b-c-d
 const hyphenateRE = /\B([A-Z])/g
+// 将第一个字母之后的所有的字母替换为-连字符，例如：abcd => a-b-c-d
 export const hyphenate = cached((str: string): string => {
   return str.replace(hyphenateRE, '-$1').toLowerCase()
 })

@@ -24,14 +24,15 @@ export function validateProp (
   propsData: Object,
   vm?: Component
 ): any {
-  const prop = propOptions[key]
+  const prop = propOptions[key] // 获取prop对应的值：{type: ...,default:...}
   const absent = !hasOwn(propsData, key)
   let value = propsData[key]
   // boolean casting
-  const booleanIndex = getTypeIndex(Boolean, prop.type)
+  const booleanIndex = getTypeIndex(Boolean, prop.type) // 判断prop类型是否Boolean
+  // 若为Boolean类型
   if (booleanIndex > -1) {
     if (absent && !hasOwn(prop, 'default')) {
-      value = false
+      value = false // 若为Boolean类型，且未设置default，则设置默认值为false
     } else if (value === '' || value === hyphenate(key)) {
       // only cast empty string / same name to boolean if
       // boolean has higher priority
@@ -179,19 +180,24 @@ function assertType (value: any, type: Function): {
  * because a simple equality check will fail when running
  * across different vms / iframes.
  */
+// 获取数据的类型，使用Object.prototype.toString()判断，所有类型都会返回对应的数据类型
 function getType (fn) {
   const match = fn && fn.toString().match(/^\s*function (\w+)/)
   return match ? match[1] : ''
 }
 
+// 是否相同数据类型
 function isSameType (a, b) {
   return getType(a) === getType(b)
 }
 
+// 检查当前类型是否为期望的类型
 function getTypeIndex (type, expectedTypes): number {
+  // 一个期望类型，直接对二者进行判断
   if (!Array.isArray(expectedTypes)) {
     return isSameType(expectedTypes, type) ? 0 : -1
   }
+  // 多个期望类型，使用数组，遍历对两个类型进行判断
   for (let i = 0, len = expectedTypes.length; i < len; i++) {
     if (isSameType(expectedTypes[i], type)) {
       return i

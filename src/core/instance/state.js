@@ -16,6 +16,7 @@ const sharedPropertyDefinition = {
   set: noop
 };
 
+// 设置访问代理
 export function proxy(target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter() {
     return this[sourceKey][key];
@@ -49,8 +50,8 @@ function initProps(vm: Component, propsOptions: Object) {
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
   const keys = vm.$options._propKeys = [];
-  const isRoot = !vm.$parent;
-  // root instance props should be converted
+  const isRoot = !vm.$parent; // 是否为父组件
+  // 若为父组件，则不对props进行监听
   if (!isRoot) {
     toggleObserving(false);
   }
@@ -109,6 +110,7 @@ function initData(vm: Component) {
   const props = vm.$options.props;
   const methods = vm.$options.methods;
   let i = keys.length;
+  // 将配置项中的data放入vm的属性_data中
   while (i--) {
     const key = keys[i];
     if (process.env.NODE_ENV !== "production") {
@@ -119,6 +121,7 @@ function initData(vm: Component) {
         );
       }
     }
+    // 检查data中的属性是否已经存在于props中
     if (props && hasOwn(props, key)) {
       process.env.NODE_ENV !== "production" && warn(
         `The data property "${key}" is already declared as a prop. ` +
