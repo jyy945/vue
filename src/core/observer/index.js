@@ -95,16 +95,14 @@ function copyAugment(target: Object, src: Object, keys: Array<string>) {
   }
 }
 
-/**
- * Attempt to create an observer instance for a value,
- * returns the new observer if successfully observed,
- * or the existing observer if the value already has one.
- */
+// 为value创建一个监听实例，若成功设置监听，则返回该实例。若已经存在监听实例，则直接返回
 export function observe(value: any, asRootData: ?boolean): Observer | void {
+  // 仅对对象进行监听
   if (!isObject(value) || value instanceof VNode) {
     return
   }
   let ob: Observer | void
+  // 若存在__ob__，则返回这个实例；否则创建监听实例
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -146,14 +144,17 @@ export function defineReactive(
     val = obj[key]
   }
 
-  let childOb = !shallow && observe(val)
+  let childOb = !shallow && observe(val)  // 对对象属性值设置响应式并返回监听对象
+  // 设置属性查询设置的代理
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
+    // 查询代理
     get: function reactiveGetter() {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
         dep.depend()
+        // 若属性也是响应式的
         if (childOb) {
           childOb.dep.depend()
           if (Array.isArray(value)) {
@@ -165,7 +166,7 @@ export function defineReactive(
     },
     set: function reactiveSetter(newVal) {
       const value = getter ? getter.call(obj) : val
-      /* eslint-disable no-self-compare */
+      // 若新旧值相同，则返回
       if (newVal === value || (newVal !== newVal && value !== value)) {
         return
       }

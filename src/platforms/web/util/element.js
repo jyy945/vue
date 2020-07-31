@@ -8,6 +8,7 @@ export const namespaceMap = {
   math: 'http://www.w3.org/1998/Math/MathML'
 }
 
+// 是否html的保留标签名
 export const isHTMLTag = makeMap(
   'html,body,base,head,link,meta,style,title,' +
   'address,article,aside,footer,header,h1,h2,h3,h4,h5,h6,hgroup,nav,section,' +
@@ -22,8 +23,7 @@ export const isHTMLTag = makeMap(
   'content,element,shadow,template,blockquote,iframe,tfoot'
 )
 
-// this map is intentionally selective, only covering SVG elements that may
-// contain child elements.
+// 是否为svg的保留标签名
 export const isSVG = makeMap(
   'svg,animate,circle,clippath,cursor,defs,desc,ellipse,filter,font-face,' +
   'foreignObject,g,glyph,image,line,marker,mask,missing-glyph,path,pattern,' +
@@ -33,6 +33,7 @@ export const isSVG = makeMap(
 
 export const isPreTag = (tag: ?string): boolean => tag === 'pre'
 
+// 是否为保留的标签
 export const isReservedTag = (tag: string): ?boolean => {
   return isHTMLTag(tag) || isSVG(tag)
 }

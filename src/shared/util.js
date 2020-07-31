@@ -1,28 +1,28 @@
 /* @flow */
-
+// 空对象，不可编辑
 export const emptyObject = Object.freeze({})
 
-// These helpers produce better VM code in JS engines due to their
-// explicitness and function inlining.
+// 是否为undefined或null
 export function isUndef (v: any): boolean %checks {
   return v === undefined || v === null
 }
 
+// 是否不为undefined和null
 export function isDef (v: any): boolean %checks {
   return v !== undefined && v !== null
 }
 
+// 为真
 export function isTrue (v: any): boolean %checks {
   return v === true
 }
 
+//为假
 export function isFalse (v: any): boolean %checks {
   return v === false
 }
 
-/**
- * Check if value is primitive.
- */
+// 是否为基本数据类型
 export function isPrimitive (value: any): boolean %checks {
   return (
     typeof value === 'string' ||
@@ -33,20 +33,15 @@ export function isPrimitive (value: any): boolean %checks {
   )
 }
 
-/**
- * Quick object check - this is primarily used to tell
- * Objects from primitive values when we know the value
- * is a JSON-compliant type.
- */
+// 快速检测是否为对象
 export function isObject (obj: mixed): boolean %checks {
   return obj !== null && typeof obj === 'object'
 }
 
-/**
- * Get the raw type string of a value, e.g., [object Object].
- */
+// toString的简写方法
 const _toString = Object.prototype.toString
 
+// 获取真实的原始类型，例如function的类型，使用toString后为 [object Function]，截取后为Function
 export function toRawType (value: any): string {
   return _toString.call(value).slice(8, -1)
 }
@@ -57,18 +52,18 @@ export function isPlainObject (obj: any): boolean {
   return _toString.call(obj) === '[object Object]'
 }
 
+// 是否为正则对象
 export function isRegExp (v: any): boolean {
   return _toString.call(v) === '[object RegExp]'
 }
 
-/**
- * Check if val is a valid array index.
- */
+// 是否为有效的数组索引
 export function isValidArrayIndex (val: any): boolean {
   const n = parseFloat(String(val))
   return n >= 0 && Math.floor(n) === n && isFinite(val)
 }
 
+// 判断是否为promise对象
 export function isPromise (val: any): boolean {
   return (
     isDef(val) &&
@@ -77,9 +72,7 @@ export function isPromise (val: any): boolean {
   )
 }
 
-/**
- * Convert a value to a string that is actually rendered.
- */
+// 将val转换为字符串
 export function toString (val: any): string {
   return val == null
     ? ''
@@ -88,19 +81,13 @@ export function toString (val: any): string {
       : String(val)
 }
 
-/**
- * Convert an input value to a number for persistence.
- * If the conversion fails, return original string.
- */
+// 转换为数字
 export function toNumber (val: string): number | string {
   const n = parseFloat(val)
   return isNaN(n) ? val : n
 }
 
-/**
- * Make a map and return a function for checking if a key
- * is in that map.
- */
+// 创建一个map，用来检查是否有key存在
 export function makeMap (
   str: string,
   expectsLowerCase?: boolean
@@ -115,19 +102,13 @@ export function makeMap (
     : val => map[val]
 }
 
-/**
- * Check if a tag is a built-in tag.
- */
+// 检查名称是否为slot或component
 export const isBuiltInTag = makeMap('slot,component', true)
 
-/**
- * Check if an attribute is a reserved attribute.
- */
+// 检查名称是否为key、ref、slot、slot-scope、js
 export const isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')
 
-/**
- * Remove an item from an array.
- */
+// 移除数组中的某个值
 export function remove (arr: Array<any>, item: any): Array<any> | void {
   if (arr.length) {
     const index = arr.indexOf(item)
@@ -137,9 +118,7 @@ export function remove (arr: Array<any>, item: any): Array<any> | void {
   }
 }
 
-/**
- * Check whether an object has the property.
- */
+// hasOwnProperty简写
 const hasOwnProperty = Object.prototype.hasOwnProperty
 export function hasOwn (obj: Object | Array<*>, key: string): boolean {
   return hasOwnProperty.call(obj, key)
@@ -158,9 +137,7 @@ export function cached<F: Function> (fn: F): F {
   }: any)
 }
 
-/**
- * Camelize a hyphen-delimited string.
- */
+// 将-连字符形式转换为驼峰
 const camelizeRE = /-(\w)/g
 export const camelize = cached((str: string): string => {
   return str.replace(camelizeRE, (_, c) => c ? c.toUpperCase() : '')

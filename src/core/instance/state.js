@@ -31,7 +31,7 @@ export function proxy(target: Object, sourceKey: string, key: string) {
 export function initState(vm: Component) {
   vm._watchers = [];
   const opts = vm.$options;
-  if (opts.props) initProps(vm, opts.props);
+  if (opts.props) initProps(vm, opts.props); // 初始化props
   if (opts.methods) initMethods(vm, opts.methods);
   if (opts.data) {
     initData(vm);
@@ -51,7 +51,7 @@ function initProps(vm: Component, propsOptions: Object) {
   // instead of dynamic object key enumeration.
   const keys = vm.$options._propKeys = [];
   const isRoot = !vm.$parent; // 是否为父组件
-  // 若为父组件，则不对props进行监听
+  // 若为父组件，则对props进行监听
   if (!isRoot) {
     toggleObserving(false);
   }
@@ -80,7 +80,7 @@ function initProps(vm: Component, propsOptions: Object) {
         }
       });
     } else {
-      defineReactive(props, key, value);
+      defineReactive(props, key, value);  // 对props中的key做响应式
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at

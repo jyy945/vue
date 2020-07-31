@@ -254,16 +254,14 @@ const defaultStrat = function (parentVal: any, childVal: any): any {
          : childVal;
 };
 
-/**
- * Validate component names
- */
+// 校验components的合法性
 function checkComponents(options: Object) {
   for (const key in options.components) {
     validateComponentName(key);
   }
 }
 
-// 检查组件名称的是否合法
+// 检查组件名称的是否合法：以大小写字母开头，且不能为slot、component以及html、svg的标签名称
 export function validateComponentName(name: string) {
   if (!new RegExp(`^[a-zA-Z][\\-\\.0-9_${unicodeRegExp.source}]*$`).test(name)) {
     warn(
@@ -271,6 +269,7 @@ export function validateComponentName(name: string) {
       "should conform to valid custom element name in html5 specification."
     );
   }
+  // 是否为slot、component或html、svg的标签名称
   if (isBuiltInTag(name) || config.isReservedTag(name)) {
     warn(
       "Do not use built-in or reserved HTML elements as component " +
@@ -372,7 +371,7 @@ export function mergeOptions(
   vm?: Component
 ): Object {
   if (process.env.NODE_ENV !== "production") {
-    checkComponents(child);
+    checkComponents(child); // 检查组件名称的合法性
   }
 
   if (typeof child === "function") {

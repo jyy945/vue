@@ -21,7 +21,6 @@ Vue.prototype.$mount = function (
 ): Component {
   el = el && query(el)
 
-  /* istanbul ignore if */
   // 根节点不可为body或documentElement节点
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -97,6 +96,6 @@ function getOuterHTML (el: Element): string {
   }
 }
 
-Vue.compile = compileToFunctions
+Vue.compile = compileToFunctions  // 设置vue的编译器
 
 export default Vue

@@ -89,6 +89,7 @@ export function initInternalComponent(vm: Component, options: InternalComponentO
   }
 }
 
+// 与vue构造函数中的options合并
 export function resolveConstructorOptions(Ctor: Class<Component>) {
   let options = Ctor.options;
   if (Ctor.super) {

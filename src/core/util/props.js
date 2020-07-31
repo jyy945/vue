@@ -18,6 +18,7 @@ type PropOptions = {
   validator: ?Function
 };
 
+// 校验props，校验prop的类型
 export function validateProp (
   key: string,
   propOptions: Object,
@@ -25,7 +26,7 @@ export function validateProp (
   vm?: Component
 ): any {
   const prop = propOptions[key] // 获取prop对应的值：{type: ...,default:...}
-  const absent = !hasOwn(propsData, key)
+  const absent = !hasOwn(propsData, key)  // propsData中是否包含key属性
   let value = propsData[key]
   // boolean casting
   const booleanIndex = getTypeIndex(Boolean, prop.type) // 判断prop类型是否Boolean
@@ -42,11 +43,10 @@ export function validateProp (
       }
     }
   }
-  // check default value
+  // 若vulue未定义，则获取设置的default值
   if (value === undefined) {
-    value = getPropDefaultValue(vm, prop, key)
-    // since the default value is a fresh copy,
-    // make sure to observe it.
+    value = getPropDefaultValue(vm, prop, key)  // 获取prop的默认值
+    // 因为默认值是个新的副本，所以要监听它
     const prevShouldObserve = shouldObserve
     toggleObserving(true)
     observe(value)
@@ -62,11 +62,9 @@ export function validateProp (
   return value
 }
 
-/**
- * Get the default value of a prop.
- */
+// 获取prop的默认值
 function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): any {
-  // no default, return undefined
+  // 若没有设置defalut值，则返回undefined
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
@@ -88,8 +86,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   ) {
     return vm._props[key]
   }
-  // call factory function for non-Function types
-  // a value is Function if its prototype is function even across different execution context
+  // 判断默认值是否为函数，若校验类型不是函数，则执行函数；否则然会默认值
   return typeof def === 'function' && getType(prop.type) !== 'Function'
     ? def.call(vm)
     : def

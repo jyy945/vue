@@ -12,8 +12,9 @@ import { initExtend } from "./extend";
 import { initMixin } from "./mixin";
 import { initUse } from "./use";
 
+// 安装全局api
 export function initGlobalAPI(Vue: GlobalAPI) {
-  // config
+  // 设置vue的config属性，值为config文件中的数据
   const configDef = {};
   configDef.get = () => config;
   if (process.env.NODE_ENV !== "production") {
@@ -45,14 +46,13 @@ export function initGlobalAPI(Vue: GlobalAPI) {
     return obj;
   };
 
-  Vue.options = Object.create(null);
+  Vue.options = Object.create(null);  // 创建options
+  // 创建options中'component','directive','filter'的默认值
   ASSET_TYPES.forEach(type => {
     Vue.options[type + "s"] = Object.create(null);
   });
 
-  // this is used to identify the "base" constructor to extend all plain-object
-  // components with in Weex's multi-instance scenarios.
-  Vue.options._base = Vue;
+  Vue.options._base = Vue;  // 设置基类
 
   extend(Vue.options.components, builtInComponents);
 
