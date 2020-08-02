@@ -14,6 +14,7 @@
   ],
   "sideEffects": false,
   "scripts": {
+    "jyy": "rollup -w -c scripts/customer.js --environment TARGET1:web-full-dev",
     "dev": "rollup -w -c scripts/config.js --environment TARGET:web-full-dev",
     "dev:cjs": "rollup -w -c scripts/config.js --environment TARGET:web-runtime-cjs-dev",
     "dev:esm": "rollup -w -c scripts/config.js --environment TARGET:web-runtime-esm",

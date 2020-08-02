@@ -1,5 +1,6 @@
 import { inBrowser } from './env'
 
+// 性能测试
 export let mark
 export let measure
 

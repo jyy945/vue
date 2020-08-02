@@ -20,7 +20,7 @@ export function initMixin(Vue: Class<Component>) {
     vm._uid = uid++;
 
     let startTag, endTag;
-    // 性能检测
+    // 性能检测-开始
     if (process.env.NODE_ENV !== "production" && config.performance && mark) {
       startTag = `vue-perf-start:${vm._uid}`;
       endTag = `vue-perf-end:${vm._uid}`;
@@ -34,6 +34,7 @@ export function initMixin(Vue: Class<Component>) {
       // TODO
       initInternalComponent(vm, options);
     } else {
+      // 将Vue对象上的options和实例中传入的options合并
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -57,7 +58,7 @@ export function initMixin(Vue: Class<Component>) {
     initProvide(vm); // resolve provide after data/props
     callHook(vm, "created");
 
-    /* istanbul ignore if */
+    // 性能检测-结束
     if (process.env.NODE_ENV !== "production" && config.performance && mark) {
       vm._name = formatComponentName(vm, false);
       mark(endTag);

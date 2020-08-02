@@ -9,6 +9,7 @@ import { query } from './util/index'
 import { compileToFunctions } from './compiler/index'
 import { shouldDecodeNewlines, shouldDecodeNewlinesForHref } from './util/compat'
 
+// 获取指定id的dom元素的innerHTML
 const idToTemplate = cached(id => {
   const el = query(id)
   return el && el.innerHTML
@@ -30,10 +31,13 @@ Vue.prototype.$mount = function (
   }
 
   const options = this.$options
-  // resolve template/el and convert to render function
+  //解析template/ el并转换为渲染函数
   if (!options.render) {
     let template = options.template
+    // 若配置项中存在template，则获取其对应的dom元素的innerHTML
+    // 若未配置template，则获取el的outerHTML
     if (template) {
+      // 若template为字符串且首字符为#，则获取该id的dom的innerHTML
       if (typeof template === 'string') {
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
@@ -45,7 +49,7 @@ Vue.prototype.$mount = function (
             )
           }
         }
-      } else if (template.nodeType) {
+      } else if (template.nodeType) { // 若为dom元素，则获取其innerHTML
         template = template.innerHTML
       } else {
         if (process.env.NODE_ENV !== 'production') {
@@ -82,10 +86,7 @@ Vue.prototype.$mount = function (
   return mount.call(this, el, hydrating)
 }
 
-/**
- * Get outerHTML of elements, taking care
- * of SVG elements in IE as well.
- */
+// 获取el的outerHTML
 function getOuterHTML (el: Element): string {
   if (el.outerHTML) {
     return el.outerHTML

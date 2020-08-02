@@ -16,9 +16,7 @@ import { unicodeRegExp } from "./lang";
  */
 const strats = config.optionMergeStrategies;
 
-/**
- * Options with restrictions
- */
+// el和propsData的合并策略
 if (process.env.NODE_ENV !== "production") {
   strats.el = strats.propsData = function (parent, child, vm, key) {
     if (!vm) {
@@ -64,7 +62,7 @@ function mergeData(to: Object, from: ?Object): Object {
   return to;
 }
 
-// 合并data或函数
+// 合并data数据
 export function mergeDataOrFn(
   parentVal: any,
   childVal: any,
@@ -131,7 +129,7 @@ strats.data = function (
 };
 
 // 合并钩子函数，
-// 将child钩子拼接到parent钩子中
+// 将child钩子拼接到parent钩子中，此时[parentHook, childHook]
 function mergeHook(
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
@@ -164,7 +162,7 @@ LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook;
 });
 
-//components、directives、filetersd的合并
+//components、directives、filetersd的合并策略
 // 直接将child的属性放到parent中，若存在相同则覆盖
 function mergeAssets(
   parentVal: ?Object,
@@ -245,9 +243,7 @@ strats.props =
       };
 strats.provide = mergeDataOrFn;
 
-/**
- * Default strategy.
- */
+// 默认的合并策略， childVal会覆盖parentVal
 const defaultStrat = function (parentVal: any, childVal: any): any {
   return childVal === undefined
          ? parentVal
@@ -382,10 +378,7 @@ export function mergeOptions(
   normalizeInject(child, vm); // 将inject标准化
   normalizeDirectives(child); // 将局部directives标准化
 
-  // Apply extends and mixins on the child options,
-  // but only if it is a raw options object that isn't
-  // the result of another mergeOptions call.
-  // Only merged options has the _base property.
+  // 对options中的extends和mixins属性进行合并
   if (!child._base) {
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm);
@@ -399,17 +392,20 @@ export function mergeOptions(
 
   const options = {};
   let key;
+  // 对parent中的属性进行合并，如果child中存在属性，则覆盖parent中的属性
   for (key in parent) {
     mergeField(key);
   }
+  // 遍历child中的属性，若parent中不存在该属性，则合并之
   for (key in child) {
     if (!hasOwn(parent, key)) {
       mergeField(key);
     }
   }
 
+  // 合并字段
   function mergeField(key) {
-    const strat = strats[key] || defaultStrat;
+    const strat = strats[key] || defaultStrat; // 获取合并策略
     options[key] = strat(parent[key], child[key], vm, key);
   }
 

@@ -14,7 +14,7 @@ import { initUse } from "./use";
 
 // 安装全局api
 export function initGlobalAPI(Vue: GlobalAPI) {
-  // 设置vue的config属性，值为config文件中的数据
+  // 设置vue的config属性，值为全局配置信息
   const configDef = {};
   configDef.get = () => config;
   if (process.env.NODE_ENV !== "production") {
@@ -26,9 +26,7 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   }
   Object.defineProperty(Vue, "config", configDef);
 
-  // exposed util methods.
-  // NOTE: these are not considered part of the public API - avoid relying on
-  // them unless you are aware of the risk.
+  // 公开的util方法。
   Vue.util = {
     warn,
     extend,

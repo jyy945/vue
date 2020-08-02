@@ -27,6 +27,7 @@ const weexFactoryPlugin = {
 }
 
 const aliases = require('./alias')  // 项目别名
+// 获取指定路径
 const resolve = p => {
   const base = p.split('/')[0]
   if (aliases[base]) {
@@ -214,6 +215,7 @@ const builds = {
   }
 }
 
+// 配置rollup
 function genConfig (name) {
   const opts = builds[name]
   const config = {

@@ -379,6 +379,7 @@ export function parse (
         }
       }
     },
+    // 处理注释
     comment (text: string, start, end) {
       // adding anything as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored

@@ -124,11 +124,7 @@ export function hasOwn (obj: Object | Array<*>, key: string): boolean {
   return hasOwnProperty.call(obj, key)
 }
 
-/**
- * Create a cached version of a pure function.
- */
-
-// 缓存代理模式，将使用过的方法进行缓存
+// 缓存代理模式，可以按照方法对计算过的结果进行缓存，用于函数。这个方法非常好，是缓存代理的构造器
 export function cached<F: Function> (fn: F): F {
   const cache = Object.create(null)
   return (function cachedFn (str: string) {
@@ -137,15 +133,13 @@ export function cached<F: Function> (fn: F): F {
   }: any)
 }
 
-// 将-连字符形式转换为驼峰
+// 将-连字符形式转换为驼峰，可缓存
 const camelizeRE = /-(\w)/g
 export const camelize = cached((str: string): string => {
   return str.replace(camelizeRE, (_, c) => c ? c.toUpperCase() : '')
 })
 
-/**
- * Capitalize a string.
- */
+// 将首字母大写，可缓存
 export const capitalize = cached((str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 })
@@ -184,13 +178,12 @@ function nativeBind (fn: Function, ctx: Object): Function {
   return fn.bind(ctx)
 }
 
+// 本地bind
 export const bind = Function.prototype.bind
   ? nativeBind
   : polyfillBind
 
-/**
- * Convert an Array-like object to a real Array.
- */
+// 将类数组转换为数组
 export function toArray (list: any, start?: number): Array<any> {
   start = start || 0
   let i = list.length - start
@@ -201,9 +194,7 @@ export function toArray (list: any, start?: number): Array<any> {
   return ret
 }
 
-/**
- * Mix properties into target object.
- */
+// 将对象属性复制到目标对象
 export function extend (to: Object, _from: ?Object): Object {
   for (const key in _from) {
     to[key] = _from[key]
@@ -211,9 +202,7 @@ export function extend (to: Object, _from: ?Object): Object {
   return to
 }
 
-/**
- * Merge an Array of Objects into a single Object.
- */
+// 将对象数组转换为一个对象
 export function toObject (arr: Array<any>): Object {
   const res = {}
   for (let i = 0; i < arr.length; i++) {
@@ -226,27 +215,18 @@ export function toObject (arr: Array<any>): Object {
 
 /* eslint-disable no-unused-vars */
 
-/**
- * Perform no operation.
- * Stubbing args to make Flow happy without leaving useless transpiled code
- * with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/).
- */
+// 不执行任何操作
 export function noop (a?: any, b?: any, c?: any) {}
 
-/**
- * Always return false.
- */
+// 返回false
 export const no = (a?: any, b?: any, c?: any) => false
 
-/* eslint-enable no-unused-vars */
 
-/**
- * Return the same value.
- */
+// 返回相同值，TODO不理解作用
 export const identity = (_: any) => _
 
 /**
- * Generate a string containing static keys from compiler modules.
+ * 从编译器模块生成包含静态键的字符串。例如：[{staticKeys: "1"},{staticKeys: "2"}] => "1,2"
  */
 export function genStaticKeys (modules: Array<ModuleOptions>): string {
   return modules.reduce((keys, m) => {
@@ -254,10 +234,7 @@ export function genStaticKeys (modules: Array<ModuleOptions>): string {
   }, []).join(',')
 }
 
-/**
- * Check if two values are loosely equal - that is,
- * if they are plain objects, do they have the same shape?
- */
+//检查两个值是否大致相等
 export function looseEqual (a: any, b: any): boolean {
   if (a === b) return true
   const isObjectA = isObject(a)
@@ -293,11 +270,7 @@ export function looseEqual (a: any, b: any): boolean {
   }
 }
 
-/**
- * Return the first index at which a loosely equal value can be
- * found in the array (if value is a plain object, the array must
- * contain an object of the same shape), or -1 if it is not present.
- */
+// 查看某个值是否和数组中的某个值宽松相等
 export function looseIndexOf (arr: Array<mixed>, val: mixed): number {
   for (let i = 0; i < arr.length; i++) {
     if (looseEqual(arr[i], val)) return i
@@ -305,9 +278,7 @@ export function looseIndexOf (arr: Array<mixed>, val: mixed): number {
   return -1
 }
 
-/**
- * Ensure a function is called only once.
- */
+// 仅执行一次函数
 export function once (fn: Function): Function {
   let called = false
   return function () {

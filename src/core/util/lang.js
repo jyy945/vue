@@ -16,9 +16,7 @@ export function isReserved (str: string): boolean {
   return c === 0x24 || c === 0x5F
 }
 
-/**
- * Define a property.
- */
+// 为对象定义一个属性
 export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
   Object.defineProperty(obj, key, {
     value: val,

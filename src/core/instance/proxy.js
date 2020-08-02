@@ -34,9 +34,11 @@ if (process.env.NODE_ENV !== 'production') {
     )
   }
 
+  // 检查是否支持Proxy
   const hasProxy =
     typeof Proxy !== 'undefined' && isNative(Proxy)
 
+  // 查看按键名称是否和已有内置名称重复
   if (hasProxy) {
     const isBuiltInModifier = makeMap('stop,prevent,self,ctrl,shift,alt,meta,exact')
     config.keyCodes = new Proxy(config.keyCodes, {
