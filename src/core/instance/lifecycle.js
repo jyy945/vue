@@ -28,14 +28,16 @@ export function initLifecycle(vm: Component) {
 
   // locate first non-abstract parent
   let parent = options.parent;
+  // 若配置了parent，则将本对象放入parent的$children中
   if (parent && !options.abstract) {
+    // 若父组件为抽象，则继续查找向上查找
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent;
     }
     parent.$children.push(vm);
   }
 
-  vm.$parent = parent;
+  vm.$parent = parent;  // 设置父组件实例
   vm.$root = parent ? parent.$root : vm;  // 设置根组件
 
   vm.$children = [];
@@ -327,7 +329,7 @@ export function deactivateChildComponent(vm: Component, direct?: boolean) {
   }
 }
 
-// 钩子函数回调
+// 执行钩子函数
 export function callHook(vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget();

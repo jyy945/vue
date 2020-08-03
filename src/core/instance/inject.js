@@ -13,7 +13,7 @@ export function initProvide(vm: Component) {
   }
 }
 
-// 初始化诸如信息
+// 初始化注入信息
 export function initInjections(vm: Component) {
   const result = resolveInject(vm.$options.inject, vm)  // 获取注入的属性的值
   if (result) {
@@ -61,7 +61,7 @@ export function resolveInject(inject: any, vm: Component): ?Object {
         }
         source = source.$parent
       }
-      // 若未在祖先组件中发现注入的属性名称，则为其赋值default值，default可以为函数，否则报错
+      // 若未找到注入属性所在的组件，则为其赋值default值，default可以为函数，否则报错
       if (!source) {
         if ('default' in inject[key]) {
           const provideDefault = inject[key].default

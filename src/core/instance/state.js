@@ -51,7 +51,8 @@ function initProps(vm: Component, propsOptions: Object) {
   // instead of dynamic object key enumeration.
   const keys = vm.$options._propKeys = [];
   const isRoot = !vm.$parent; // 是否为父组件
-  // 若为父组件，则对props进行监听
+  // 若不为根组件，则不会对响应式进行监听，
+  // 若为根组件，则对props进行监听
   if (!isRoot) {
     toggleObserving(false);
   }
@@ -85,6 +86,7 @@ function initProps(vm: Component, propsOptions: Object) {
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
+    // 若vm中不存在该prop属性，则设置
     if (!(key in vm)) {
       proxy(vm, `_props`, key);
     }
