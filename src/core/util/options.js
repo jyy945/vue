@@ -184,12 +184,7 @@ ASSET_TYPES.forEach(function (type) {
   strats[type + "s"] = mergeAssets;
 });
 
-/**
- * Watchers.
- *
- * Watchers hashes should not overwrite one
- * another, so we merge them as arrays.
- */
+// 合并watch
 strats.watch = function (
   parentVal: ?Object,
   childVal: ?Object,
@@ -220,9 +215,8 @@ strats.watch = function (
   return ret;
 };
 
-/**
- * Other object hashes.
- */
+
+// 其他属性的合并策略
 strats.props =
   strats.methods =
     strats.inject =
@@ -347,6 +341,7 @@ function normalizeDirectives(options: Object) {
   }
 }
 
+// 断言对象类型
 function assertObjectType(name: string, value: any, vm: ?Component) {
   if (!isPlainObject(value)) {
     warn(
@@ -357,10 +352,7 @@ function assertObjectType(name: string, value: any, vm: ?Component) {
   }
 }
 
-/**
- * Merge two option objects into a new one.
- * Core utility used in both instantiation and inheritance.
- */
+// 合并两个options
 export function mergeOptions(
   parent: Object,
   child: Object,
