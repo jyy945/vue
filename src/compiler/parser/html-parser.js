@@ -14,12 +14,14 @@ import { isNonPhrasingTag } from 'web/compiler/util'
 import { unicodeRegExp } from 'core/util/lang'
 
 // Regular Expressions for parsing tags and attributes
+// 匹配标签上的静态属性，例如： data = "123"
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
-const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+// 匹配标签上的动态属性，例如v-bind:[attrname] = "name", :[attrname] = "name", @[methodName] = "click", #[slotName] = "slot"
+const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/  // 匹配属性
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*` // 标签名正则
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
-const startTagClose = /^\s*(\/?)>/
+const startTagClose = /^\s*(\/?)>/ // 匹配开始标签关闭
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
 const doctype = /^<!DOCTYPE [^>]+>/i
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
@@ -31,6 +33,7 @@ const conditionalComment = /^<!\[/
 export const isPlainTextElement = makeMap('script,style,textarea', true)
 const reCache = {}
 
+// 解码map
 const decodingMap = {
   '&lt;': '<',
   '&gt;': '>',
@@ -40,13 +43,14 @@ const decodingMap = {
   '&#9;': '\t',
   '&#39;': "'"
 }
-const encodedAttr = /&(?:lt|gt|quot|amp|#39);/g
-const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#39|#10|#9);/g
+const encodedAttr = /&(?:lt|gt|quot|amp|#39);/g // 解码的属性
+const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#39|#10|#9);/g // 包含换行的解码属性
 
 // #5992
 const isIgnoreNewlineTag = makeMap('pre,textarea', true)
 const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) && html[0] === '\n'
 
+// 解码属性，将转义字符转换为真实属性
 function decodeAttr (value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr
   return value.replace(re, match => decodingMap[match])
@@ -63,14 +67,15 @@ export function parseHTML (html, options) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
-      let textEnd = html.indexOf('<')
+      let textEnd = html.indexOf('<') // 获取html标签<tagname>中<的位置
+      // 若位置为0，则表示为开始标签
       if (textEnd === 0) {
         // 校验html注释
         if (comment.test(html)) {
           const commentEnd = html.indexOf('-->') // 注释的结尾位置
 
           if (commentEnd >= 0) {
-            // 若配置项中设置为保存html注释，
+            // 若配置项中设置为保存html注释，则将html注释
             if (options.shouldKeepComment) {
               options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3)
             }
@@ -105,7 +110,12 @@ export function parseHTML (html, options) {
           continue
         }
 
-        // Start tag:
+        // 解析开始标签，返回对象，例如{
+        //    tagName: "div",
+        //    attrs: [{...}, {...}]
+        //    start: 0,
+        //    end: 10
+        // }
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
           handleStartTag(startTagMatch)
@@ -124,7 +134,7 @@ export function parseHTML (html, options) {
           !startTagOpen.test(rest) &&
           !comment.test(rest) &&
           !conditionalComment.test(rest)
-        ) {
+          ) {
           // < in plain text, be forgiving and treat it as text
           next = rest.indexOf('<', 1)
           if (next < 0) break
@@ -187,24 +197,26 @@ export function parseHTML (html, options) {
     html = html.substring(n)
   }
 
+  // 编译开始标签
   function parseStartTag () {
-    const start = html.match(startTagOpen)
+    const start = html.match(startTagOpen) // 正则截取标签名：["<name", "name"]
     if (start) {
       const match = {
         tagName: start[1],
         attrs: [],
         start: index
       }
-      advance(start[0].length)
+      advance(start[0].length) // 切除匹配的字符串
       let end, attr
+      // 对标签内的属性不断解析，直到解析到标签结尾
       while (!(end = html.match(startTagClose)) && (attr = html.match(dynamicArgAttribute) || html.match(attribute))) {
         attr.start = index
         advance(attr[0].length)
         attr.end = index
-        match.attrs.push(attr)
+        match.attrs.push(attr) // 将解析到的属性放入attrs中
       }
       if (end) {
-        match.unarySlash = end[1]
+        match.unarySlash = end[1] // 若为自闭合标签，则为"/"；否则为""
         advance(end[0].length)
         match.end = index
         return match
@@ -212,6 +224,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  // 处理开始标签
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash
@@ -225,19 +238,21 @@ export function parseHTML (html, options) {
       }
     }
 
+    // 检查是否自闭合标签，首先检查是否为html特定的自闭合标签，然后检查是否html写成自闭合
     const unary = isUnaryTag(tagName) || !!unarySlash
 
     const l = match.attrs.length
     const attrs = new Array(l)
+    // 对属性进行遍历，获取属性名称和值
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i]
-      const value = args[3] || args[4] || args[5] || ''
+      const value = args[3] || args[4] || args[5] || '' // 获取属性的值
       const shouldDecodeNewlines = tagName === 'a' && args[1] === 'href'
         ? options.shouldDecodeNewlinesForHref
         : options.shouldDecodeNewlines
       attrs[i] = {
         name: args[1],
-        value: decodeAttr(value, shouldDecodeNewlines)
+        value: decodeAttr(value, shouldDecodeNewlines) // 对属性值进行解码
       }
       if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
         attrs[i].start = args.start + args[0].match(/^\s*/).length
@@ -245,6 +260,7 @@ export function parseHTML (html, options) {
       }
     }
 
+    // 若不是自闭合标签
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end })
       lastTag = tagName
@@ -255,6 +271,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  // 编译结束标签
   function parseEndTag (tagName, start, end) {
     let pos, lowerCasedTagName
     if (start == null) start = index

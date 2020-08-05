@@ -20,7 +20,7 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
-  el = el && query(el)
+  el = el && query(el) // 获取el对应的dom元素，若不存在el，则创建一个div
 
   // 根节点不可为body或documentElement节点
   if (el === document.body || el === document.documentElement) {
@@ -32,6 +32,7 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   //解析template/ el并转换为渲染函数
+  // 若未设置render，则对template进行编译
   if (!options.render) {
     let template = options.template
     // 若配置项中存在template，则获取其对应的dom元素的innerHTML
@@ -70,7 +71,7 @@ Vue.prototype.$mount = function (
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
         shouldDecodeNewlinesForHref,
-        delimiters: options.delimiters, // 改变纯文本插入分隔符
+        delimiters: options.delimiters, // 改变纯文本定界符
         comments: options.comments  // 是否保留html的注释
       }, this)
       options.render = render

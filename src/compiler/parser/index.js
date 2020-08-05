@@ -76,6 +76,7 @@ export function createASTElement (
 /**
  * Convert HTML string to AST.
  */
+// 将html转换为ast
 export function parse (
   template: string,
   options: CompilerOptions
@@ -204,11 +205,11 @@ export function parse (
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
-    isUnaryTag: options.isUnaryTag,
+    isUnaryTag: options.isUnaryTag, // 一元标签
     canBeLeftOpenTag: options.canBeLeftOpenTag,
     shouldDecodeNewlines: options.shouldDecodeNewlines,
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
-    shouldKeepComment: options.comments,
+    shouldKeepComment: options.comments, // 是否保存注释
     outputSourceRange: options.outputSourceRange,
     start (tag, attrs, unary, start, end) {
       // check namespace.
@@ -379,7 +380,7 @@ export function parse (
         }
       }
     },
-    // 处理注释
+    // 创建注释节点
     comment (text: string, start, end) {
       // adding anything as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored
