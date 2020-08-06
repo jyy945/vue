@@ -25,8 +25,12 @@ export const onRE = /^@|^v-on:/
 export const dirRE = process.env.VBIND_PROP_SHORTHAND
   ? /^v-|^@|^:|^\.|^#/
   : /^v-|^@|^:|^#/
+// v-for 属性值正则
 export const forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
+//
 export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
+
+// 匹配key两侧的括号，例如：v-for="(key, index) in obj"
 const stripParensRE = /^\(|\)$/g
 const dynamicArgRE = /^\[.*\]$/
 
@@ -269,6 +273,7 @@ export function parse (
         element = preTransforms[i](element, options) || element
       }
 
+      // 若inVPre为false，则删除pre属性
       if (!inVPre) {
         // 处理格式化文本
         processPre(element)
@@ -276,15 +281,16 @@ export function parse (
           inVPre = true
         }
       }
+      // 查看是否为pre标签
       if (platformIsPreTag(element.tag)) {
         inPre = true
       }
       if (inVPre) {
-        processRawAttrs(element)
+        processRawAttrs(element) //初始原始属性列表
       } else if (!element.processed) {
         // structural directives
-        processFor(element)
-        processIf(element)
+        processFor(element) // 处理v-for标签，会将处理后的v-for的值，放入element中
+        processIf(element)  // 处理v-if标签
         processOnce(element)
       }
 
@@ -406,12 +412,14 @@ export function parse (
   return root
 }
 
+// 处理格式化文本
 function processPre (el) {
   if (getAndRemoveAttr(el, 'v-pre') != null) {
     el.pre = true
   }
 }
 
+//初始原始属性列表
 function processRawAttrs (el) {
   const list = el.attrsList
   const len = list.length
@@ -493,10 +501,20 @@ function processRef (el) {
   }
 }
 
+// 处理v-for标签
 export function processFor (el: ASTElement) {
   let exp
+  // 获取v-for的值，并将这个属性从attrsList和attrsMap中删除
   if ((exp = getAndRemoveAttr(el, 'v-for'))) {
+    // 处理v-for属性值，以(key, index, i) in names为例格式如下：
+    // {
+    //    for: "names",
+    //    alias: "key",
+    //    iterator1: index,
+    //    iterator2: i
+    // }
     const res = parseFor(exp)
+    // 若存在v-for的属性值，则将处理后的数据放在el中
     if (res) {
       extend(el, res)
     } else if (process.env.NODE_ENV !== 'production') {
@@ -515,16 +533,23 @@ type ForParseResult = {
   iterator2?: string;
 };
 
+// 处理v-for属性值
 export function parseFor (exp: string): ?ForParseResult {
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
   const res = {}
+  // 获取需要遍历的状态，例如 v-for="key in obj" 中的obj
   res.for = inMatch[2].trim()
+  // 删除key的括号，例如：v-for="(key, index) in obj"， 获取: "key, index
   const alias = inMatch[1].trim().replace(stripParensRE, '')
-  const iteratorMatch = alias.match(forIteratorRE)
+  const iteratorMatch = alias.match(forIteratorRE) // 查看迭代器的参数是否包含多个，例如(key, index)
+  // 若迭代器的参数包含多个，分别获取这些参数。否则只返回一个参数
   if (iteratorMatch) {
+    // 获取迭代器的第一个参数
     res.alias = alias.replace(forIteratorRE, '').trim()
+    // 获取迭代器的第二个参数
     res.iterator1 = iteratorMatch[1].trim()
+    // 获取迭代器的第三个参数
     if (iteratorMatch[2]) {
       res.iterator2 = iteratorMatch[2].trim()
     }

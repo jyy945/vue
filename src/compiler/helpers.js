@@ -176,16 +176,14 @@ export function getBindingAttr (
   }
 }
 
-// note: this only removes the attr from the Array (attrsList) so that it
-// doesn't get processed by processAttrs.
-// By default it does NOT remove it from the map (attrsMap) because the map is
-// needed during codegen.
+// 删除某个属性
 export function getAndRemoveAttr (
   el: ASTElement,
   name: string,
   removeFromMap?: boolean
 ): ?string {
   let val
+  // 查找对应的属性，并将其在attrsList中删除
   if ((val = el.attrsMap[name]) != null) {
     const list = el.attrsList
     for (let i = 0, l = list.length; i < l; i++) {
@@ -195,6 +193,7 @@ export function getAndRemoveAttr (
       }
     }
   }
+  // 若removeFromMap为真，则将其在attrsMap中删除
   if (removeFromMap) {
     delete el.attrsMap[name]
   }
