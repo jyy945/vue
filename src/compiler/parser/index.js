@@ -40,6 +40,7 @@ const slotRE = /^v-slot(:|$)|^#/
 const lineBreakRE = /[\r\n]/
 const whitespaceRE = /\s+/g
 
+// 属性名中无效的符号
 const invalidAttributeRE = /[\s"'<>\/=]/
 
 const decodeHTMLCached = cached(he.decode)
@@ -57,6 +58,7 @@ let platformMustUseProp
 let platformGetTagNamespace
 let maybeComponent
 
+// 创建AST元素
 export function createASTElement (
   tag: string,
   attrs: Array<ASTAttr>,
@@ -205,24 +207,24 @@ export function parse (
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
-    isUnaryTag: options.isUnaryTag, // 一元标签
+    isUnaryTag: options.isUnaryTag, // 是否自闭合标签
     canBeLeftOpenTag: options.canBeLeftOpenTag,
     shouldDecodeNewlines: options.shouldDecodeNewlines,
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments, // 是否保存注释
     outputSourceRange: options.outputSourceRange,
     start (tag, attrs, unary, start, end) {
-      // check namespace.
-      // inherit parent ns if there is one
+      // 检查命名空间，若父标签包含ns，则继承，否则检查当前标签是否为svg或mathML命名空间
       const ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag)
 
       // handle IE svg bug
       /* istanbul ignore if */
+      // 处理ie中的svg的bug
       if (isIE && ns === 'svg') {
-        attrs = guardIESVGBug(attrs)
+        attrs = guardIESVGBug(attrs) // 处理ie的svg的bug问题
       }
 
-      let element: ASTElement = createASTElement(tag, attrs, currentParent)
+      let element: ASTElement = createASTElement(tag, attrs, currentParent) // 创建AST元素
       if (ns) {
         element.ns = ns
       }
@@ -237,6 +239,7 @@ export function parse (
           }, {})
         }
         attrs.forEach(attr => {
+          // 检查属性名中是否包含非法字符
           if (invalidAttributeRE.test(attr.name)) {
             warn(
               `Invalid dynamic argument expression: attribute names cannot contain ` +
@@ -250,6 +253,7 @@ export function parse (
         })
       }
 
+      // 检查标签名是否为style或script等被禁止的标签
       if (isForbiddenTag(element) && !isServerRendering()) {
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
@@ -260,12 +264,13 @@ export function parse (
         )
       }
 
-      // apply pre-transforms
+      // TODO
       for (let i = 0; i < preTransforms.length; i++) {
         element = preTransforms[i](element, options) || element
       }
 
       if (!inVPre) {
+        // 处理格式化文本
         processPre(element)
         if (element.pre) {
           inVPre = true
@@ -914,6 +919,7 @@ function parseModifiers (name: string): Object | void {
   }
 }
 
+// 创建属性映射表
 function makeAttrsMap (attrs: Array<Object>): Object {
   const map = {}
   for (let i = 0, l = attrs.length; i < l; i++) {
@@ -933,6 +939,7 @@ function isTextTag (el): boolean {
   return el.tag === 'script' || el.tag === 'style'
 }
 
+// 是否为被禁止的标签
 function isForbiddenTag (el): boolean {
   return (
     el.tag === 'style' ||
@@ -946,7 +953,11 @@ function isForbiddenTag (el): boolean {
 const ieNSBug = /^xmlns:NS\d+/
 const ieNSPrefix = /^NS\d+:/
 
-/* istanbul ignore next */
+// 处理ie中的svg标签bug，删除xmlns:NS中的NS
+// 例如，<svg
+//   xmlns="http://www.w3.org/2000/svg"
+//   version="1.1"
+//   xmlns:xlink="http://www.w3.org/1999/xlink">
 function guardIESVGBug (attrs) {
   const res = []
   for (let i = 0; i < attrs.length; i++) {

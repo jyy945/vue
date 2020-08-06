@@ -22,7 +22,7 @@ const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*` // 标签�
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
 const startTagClose = /^\s*(\/?)>/ // 匹配开始标签关闭
-const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`) // 结束标签
 const doctype = /^<!DOCTYPE [^>]+>/i
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
 // html注释正则表达式：<!-- comment -->
@@ -56,6 +56,7 @@ function decodeAttr (value, shouldDecodeNewlines) {
   return value.replace(re, match => decodingMap[match])
 }
 
+// 编译HTML
 export function parseHTML (html, options) {
   const stack = []
   const expectHTML = options.expectHTML
@@ -206,7 +207,7 @@ export function parseHTML (html, options) {
         attrs: [],
         start: index
       }
-      advance(start[0].length) // 切除匹配的字符串
+      advance(start[0].length) // 切除匹配的标签名
       let end, attr
       // 对标签内的属性不断解析，直到解析到标签结尾
       while (!(end = html.match(startTagClose)) && (attr = html.match(dynamicArgAttribute) || html.match(attribute))) {
@@ -226,8 +227,8 @@ export function parseHTML (html, options) {
 
   // 处理开始标签
   function handleStartTag (match) {
-    const tagName = match.tagName
-    const unarySlash = match.unarySlash
+    const tagName = match.tagName // 标签名称
+    const unarySlash = match.unarySlash // 是否为自闭合标签
 
     if (expectHTML) {
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
@@ -260,7 +261,7 @@ export function parseHTML (html, options) {
       }
     }
 
-    // 若不是自闭合标签
+    // 若不是自闭合标签，将该标签进行缓存，用来匹配结束标签
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end })
       lastTag = tagName
