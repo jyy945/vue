@@ -176,7 +176,7 @@ export function getBindingAttr (
   }
 }
 
-// 删除某个属性
+// 获取某个属性的值，并其在attrsMap和attrsList中删除
 export function getAndRemoveAttr (
   el: ASTElement,
   name: string,

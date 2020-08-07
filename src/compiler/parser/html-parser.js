@@ -226,6 +226,12 @@ export function parseHTML (html, options) {
   }
 
   // 处理开始标签
+  // {
+  //    tagName: start[1],
+  //    attrs: [],
+  //    start: index
+  //    unarySlash: boolean
+  //  }
   function handleStartTag (match) {
     const tagName = match.tagName // 标签名称
     const unarySlash = match.unarySlash // 是否为自闭合标签

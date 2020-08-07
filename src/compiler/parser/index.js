@@ -106,8 +106,8 @@ export function parse (
   const whitespaceOption = options.whitespace
   let root
   let currentParent
-  let inVPre = false
-  let inPre = false
+  let inVPre = false // 是否v-pre
+  let inPre = false // 是否pre
   let warned = false
 
   function warnOnce (msg, range) {
@@ -289,9 +289,9 @@ export function parse (
         processRawAttrs(element) //初始原始属性列表
       } else if (!element.processed) {
         // structural directives
-        processFor(element) // 处理v-for标签，会将处理后的v-for的值，放入element中
-        processIf(element)  // 处理v-if标签
-        processOnce(element)
+        processFor(element) // 处理v-for属性，会将处理后的v-for的值，放入element中
+        processIf(element)  // 处理v-if属性，element新增if,exp,block\else\elseif
+        processOnce(element) // 处理v-once属性
       }
 
       if (!root) {
@@ -301,6 +301,7 @@ export function parse (
         }
       }
 
+      // 若不是自闭合标签，则设置currentParent为当前element
       if (!unary) {
         currentParent = element
         stack.push(element)
@@ -412,7 +413,7 @@ export function parse (
   return root
 }
 
-// 处理格式化文本
+// 获取v-pre属性值
 function processPre (el) {
   if (getAndRemoveAttr(el, 'v-pre') != null) {
     el.pre = true
@@ -559,8 +560,9 @@ export function parseFor (exp: string): ?ForParseResult {
   return res
 }
 
+// 处理v-if属性值
 function processIf (el) {
-  const exp = getAndRemoveAttr(el, 'v-if')
+  const exp = getAndRemoveAttr(el, 'v-if') // v-if属性值
   if (exp) {
     el.if = exp
     addIfCondition(el, {
@@ -612,6 +614,7 @@ function findPrevElement (children: Array<any>): ASTElement | void {
   }
 }
 
+// 添加if条件信息
 export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   if (!el.ifConditions) {
     el.ifConditions = []
@@ -619,6 +622,7 @@ export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   el.ifConditions.push(condition)
 }
 
+// 处理v-once属性值
 function processOnce (el) {
   const once = getAndRemoveAttr(el, 'v-once')
   if (once != null) {
