@@ -105,7 +105,7 @@ export function parse (
   const preserveWhitespace = options.preserveWhitespace !== false
   const whitespaceOption = options.whitespace
   let root
-  let currentParent
+  let currentParent // 上一个节点
   let inVPre = false
   let inPre = false
   let warned = false
@@ -117,6 +117,7 @@ export function parse (
     }
   }
 
+  // 关闭节点
   function closeElement (element) {
     trimEndingWhitespace(element)
     if (!inVPre && !element.processed) {
@@ -273,18 +274,19 @@ export function parse (
         element = preTransforms[i](element, options) || element
       }
 
-      // 若inVPre为false，则删除pre属性
+
       if (!inVPre) {
-        // 处理格式化文本
+        // 处理格式化文本，若存在v-pre则inVPre为true
         processPre(element)
         if (element.pre) {
           inVPre = true
         }
       }
-      // 查看是否为pre标签
+      // 查看是否为pre标签，若是，则设置inPre为true
       if (platformIsPreTag(element.tag)) {
         inPre = true
       }
+      // 若为v-pre，则为element添加attrs
       if (inVPre) {
         processRawAttrs(element) //初始原始属性列表
       } else if (!element.processed) {
@@ -294,6 +296,7 @@ export function parse (
         processOnce(element)
       }
 
+      // 若不存在root节点，则将当前节点对象赋值给root
       if (!root) {
         root = element
         if (process.env.NODE_ENV !== 'production') {
@@ -301,6 +304,8 @@ export function parse (
         }
       }
 
+      // 若不是自闭合标签，则将currentParent设置为当前节点，并将节点对象进行缓存
+      // 若是自闭合标签，则处理结束节点
       if (!unary) {
         currentParent = element
         stack.push(element)
@@ -310,10 +315,9 @@ export function parse (
     },
 
     end (tag, start, end) {
-      const element = stack[stack.length - 1]
-      // pop stack
-      stack.length -= 1
-      currentParent = stack[stack.length - 1]
+      const element = stack[stack.length - 1] // 当前节点
+      stack.length -= 1 // 将当前节点弹出
+      currentParent = stack[stack.length - 1] // 设置上一个节点为当前节点的父节点
       if (process.env.NODE_ENV !== 'production' && options.outputSourceRange) {
         element.end = end
       }
@@ -347,6 +351,7 @@ export function parse (
       }
       const children = currentParent.children
       if (inPre || text.trim()) {
+        // 若父元素节点为script或style，则text赋值为内部的文本；否则对文本进行解码
         text = isTextTag(currentParent) ? text : decodeHTMLCached(text)
       } else if (!children.length) {
         // remove the whitespace-only node right after an opening tag
@@ -364,7 +369,7 @@ export function parse (
       }
       if (text) {
         if (!inPre && whitespaceOption === 'condense') {
-          // condense consecutive whitespaces into single space
+          // 将连续的空格压缩为单个空间
           text = text.replace(whitespaceRE, ' ')
         }
         let res
@@ -393,8 +398,8 @@ export function parse (
     },
     // 创建注释节点
     comment (text: string, start, end) {
-      // adding anything as a sibling to the root node is forbidden
-      // comments should still be allowed, but ignored
+      // 设置注释节点对象，若该注释节点没有根节点，则会被忽略。
+      // 注释的type为3
       if (currentParent) {
         const child: ASTText = {
           type: 3,
@@ -435,8 +440,7 @@ function processRawAttrs (el) {
         attrs[i].end = list[i].end
       }
     }
-  } else if (!el.pre) {
-    // non root node in pre blocks with no attributes
+  } else if (!el.pre) { // 如果不是pre标签，则为纯对象
     el.plain = true
   }
 }
@@ -959,7 +963,7 @@ function makeAttrsMap (attrs: Array<Object>): Object {
   return map
 }
 
-// for script (e.g. type="x/template") or style, do not decode content
+// 是否为文本标签，script/style
 function isTextTag (el): boolean {
   return el.tag === 'script' || el.tag === 'style'
 }
