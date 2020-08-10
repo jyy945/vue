@@ -64,7 +64,8 @@ export function parseHTML (html, options) {
   const isUnaryTag = options.isUnaryTag || no
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
   let index = 0 // 标记剩余未解析的html的开始位置
-  let last, lastTag
+  let last,
+    lastTag // 开始的标签名，用于配合结束标签
   while (html) {
     last = html
     // Make sure we're not in a plaintext content element like script/style
@@ -117,11 +118,13 @@ export function parseHTML (html, options) {
         //    tagName: "div",
         //    attrs: [{...}, {...}]
         //    start: 0,
-        //    end: 10
+        //    end: 10，
+        //    unarySlash：boolean （true: 自闭合标签，false：非自闭合标签)
         // }
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
           handleStartTag(startTagMatch) // 处理开始标签
+          // 若为pre,textarea标签且第一字符为换行，则删除换行
           if (shouldIgnoreFirstNewline(startTagMatch.tagName, html)) {
             advance(1)
           }
@@ -133,7 +136,7 @@ export function parseHTML (html, options) {
       // 包含内嵌html的标签
       if (textEnd >= 0) {
         rest = html.slice(textEnd) // 获取标签中剩下的html，例如<div><span>123</span></div>中的</span></div>
-        // 若不是结束标签，不是开始标签，不是注释，不是条件注释，则表示为纯文本
+        // 若开头不是结束标签，不是开始标签，不是注释，不是条件注释，则表示为纯文本
         while (
           !endTag.test(rest) &&
           !startTagOpen.test(rest) &&
@@ -141,6 +144,7 @@ export function parseHTML (html, options) {
           !conditionalComment.test(rest)
           ) {
           // < in plain text, be forgiving and treat it as text
+          // 将纯文本里面的<视为普通文本
           next = rest.indexOf('<', 1) // 查看剩下的html中是否还有<
           if (next < 0) break
           textEnd += next
@@ -154,6 +158,7 @@ export function parseHTML (html, options) {
         text = html
       }
 
+      // 截断文本
       if (text) {
         advance(text.length)
       }
@@ -163,7 +168,8 @@ export function parseHTML (html, options) {
       }
     } else {
       let endTagLength = 0
-      const stackedTag = lastTag.toLowerCase()
+      const stackedTag = lastTag.toLowerCase() // 开始的标签名
+      // 结束标签正则
       const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
       const rest = html.replace(reStackedTag, function (all, text, endTag) {
         endTagLength = endTag.length
@@ -203,7 +209,7 @@ export function parseHTML (html, options) {
     html = html.substring(n)
   }
 
-  // 编译开始标签
+  // 编译开始标签，获取标签中的属性
   function parseStartTag () {
     const start = html.match(startTagOpen) // 正则截取标签名：["<div", "div"]
     if (start) {
@@ -296,7 +302,7 @@ export function parseHTML (html, options) {
       pos = 0
     }
 
-    // 若匹配到了开始标签
+    // 若匹配到了开始标签，则将中间的所有的开放标签关闭
     if (pos >= 0) {
       // Close all the open elements, up the stack
       for (let i = stack.length - 1; i >= pos; i--) {

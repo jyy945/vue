@@ -3,10 +3,13 @@
 import { cached } from 'shared/util'
 import { parseFilters } from './filter-parser'
 
-const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g
-const regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g
+const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g // 默认的标签正则
+const regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g // 匹配正则运算符
 
+// 构建正则
 const buildRegex = cached(delimiters => {
+  // $&当前匹配的内容
+  // 将匹配到的正则运算符转义，例如+ => \+
   const open = delimiters[0].replace(regexEscapeRE, '\\$&')
   const close = delimiters[1].replace(regexEscapeRE, '\\$&')
   return new RegExp(open + '((?:.|\\n)+?)' + close, 'g')
@@ -21,7 +24,7 @@ export function parseText (
   text: string,
   delimiters?: [string, string]
 ): TextParseResult | void {
-  const tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE
+  const tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE // 构建标签的正则表达式
   if (!tagRE.test(text)) {
     return
   }

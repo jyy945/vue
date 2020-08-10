@@ -314,6 +314,7 @@ export function parse (
       }
     },
 
+    // 关闭标签
     end (tag, start, end) {
       const element = stack[stack.length - 1] // 当前节点
       stack.length -= 1 // 将当前节点弹出
@@ -324,6 +325,7 @@ export function parse (
       closeElement(element)
     },
 
+    // 处理文本
     chars (text: string, start: number, end: number) {
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
@@ -341,8 +343,7 @@ export function parse (
         }
         return
       }
-      // IE textarea placeholder bug
-      /* istanbul ignore if */
+      // ie 不支持textarea的placeholder
       if (isIE &&
         currentParent.tag === 'textarea' &&
         currentParent.attrsMap.placeholder === text
