@@ -2,6 +2,7 @@
 
 const validDivisionCharRE = /[\w).+\-_$\]]/
 
+// 解析过滤器
 export function parseFilters (exp: string): string {
   let inSingle = false
   let inDouble = false
@@ -15,7 +16,7 @@ export function parseFilters (exp: string): string {
 
   for (i = 0; i < exp.length; i++) {
     prev = c
-    c = exp.charCodeAt(i)
+    c = exp.charCodeAt(i) // 获取字符的编码
     if (inSingle) {
       if (c === 0x27 && prev !== 0x5C) inSingle = false
     } else if (inDouble) {
@@ -25,15 +26,17 @@ export function parseFilters (exp: string): string {
     } else if (inRegex) {
       if (c === 0x2f && prev !== 0x5C) inRegex = false
     } else if (
-      c === 0x7C && // pipe
+      // 若匹配到|且不是||，则表示为过滤器，
+      c === 0x7C && // |
       exp.charCodeAt(i + 1) !== 0x7C &&
       exp.charCodeAt(i - 1) !== 0x7C &&
       !curly && !square && !paren
     ) {
+      // 若expressiong未赋值，则表示未第一个filter。
       if (expression === undefined) {
-        // first filter, end of expression
+        // 第一个filter的开始，表达式的结尾
         lastFilterIndex = i + 1
-        expression = exp.slice(0, i).trim()
+        expression = exp.slice(0, i).trim() // 获取表达式
       } else {
         pushFilter()
       }
