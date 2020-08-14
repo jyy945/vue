@@ -383,6 +383,7 @@ export function parse (
             text
           }
         } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
+          // 纯文本
           child = {
             type: 3,
             text

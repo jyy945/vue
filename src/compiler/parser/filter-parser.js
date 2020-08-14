@@ -52,6 +52,7 @@ export function parseFilters (exp: string): string {
         case 0x7B: curly++; break                 // {
         case 0x7D: curly--; break                 // }
       }
+      // 正则
       if (c === 0x2f) { // /
         let j = i - 1
         let p
@@ -73,11 +74,13 @@ export function parseFilters (exp: string): string {
     pushFilter()
   }
 
+  // 将匹配到的filter进行保存
   function pushFilter () {
     (filters || (filters = [])).push(exp.slice(lastFilterIndex, i).trim())
     lastFilterIndex = i + 1
   }
 
+  // 若插值表达式中存在过滤器则
   if (filters) {
     for (i = 0; i < filters.length; i++) {
       expression = wrapFilter(expression, filters[i])
@@ -87,8 +90,11 @@ export function parseFilters (exp: string): string {
   return expression
 }
 
+// 创建filter
 function wrapFilter (exp: string, filter: string): string {
   const i = filter.indexOf('(')
+  // 若没有括号，表示没有filter的参数，直接将表达式作为参数，生成字符串
+  // 若有括号，则表示已经包含参数
   if (i < 0) {
     // _f: resolveFilter
     return `_f("${filter}")(${exp})`

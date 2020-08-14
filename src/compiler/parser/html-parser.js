@@ -61,7 +61,7 @@ function decodeAttr(value, shouldDecodeNewlines) {
 export function parseHTML (html, options) {
   const stack = []
   const expectHTML = options.expectHTML
-  const isUnaryTag = options.isUnaryTag || no
+  const isUnaryTag = options.isUnaryTag || no // 是否自闭合标签
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
   let index = 0 // 标记剩余未解析的html的开始位置
   let last,
@@ -87,6 +87,7 @@ export function parseHTML (html, options) {
             continue;
           }
         }
+
 
         // 解析条件注释，直接将条件注释去掉
         if (conditionalComment.test(html)) {

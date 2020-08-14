@@ -45,6 +45,7 @@ export function parseText (
       tokens.push(JSON.stringify(tokenValue)) // 将该原始文本转换为字符串保存
     }
     // tag token
+    // 对表达式进行过滤器解析
     const exp = parseFilters(match[1].trim())
     tokens.push(`_s(${exp})`)
     rawTokens.push({ '@binding': exp })
