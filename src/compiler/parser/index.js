@@ -418,7 +418,7 @@ export function parse (
   return root
 }
 
-// 获取v-pre属性值
+// 处理格式化文本
 function processPre (el) {
   if (getAndRemoveAttr(el, 'v-pre') != null) {
     el.pre = true
@@ -618,7 +618,6 @@ function findPrevElement (children: Array<any>): ASTElement | void {
   }
 }
 
-// 添加if条件信息
 export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   if (!el.ifConditions) {
     el.ifConditions = []
@@ -626,7 +625,6 @@ export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   el.ifConditions.push(condition)
 }
 
-// 处理v-once属性值
 function processOnce (el) {
   const once = getAndRemoveAttr(el, 'v-once')
   if (once != null) {
