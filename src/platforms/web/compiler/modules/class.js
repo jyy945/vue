@@ -9,7 +9,7 @@ import {
 
 function transformNode (el: ASTElement, options: CompilerOptions) {
   const warn = options.warn || baseWarn
-  const staticClass = getAndRemoveAttr(el, 'class')
+  const staticClass = getAndRemoveAttr(el, 'class') // 获取class属性值
   if (process.env.NODE_ENV !== 'production' && staticClass) {
     const res = parseText(staticClass, options.delimiters)
     if (res) {
@@ -25,6 +25,7 @@ function transformNode (el: ASTElement, options: CompilerOptions) {
   if (staticClass) {
     el.staticClass = JSON.stringify(staticClass)
   }
+  // 获取动态的class属性值
   const classBinding = getBindingAttr(el, 'class', false /* getStatic */)
   if (classBinding) {
     el.classBinding = classBinding

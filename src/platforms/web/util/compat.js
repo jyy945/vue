@@ -4,7 +4,7 @@ import { inBrowser } from 'core/util/index'
 
 // check whether current browser encodes a char inside attribute values
 let div
-// ie会在使用innnerHTML的时候对换行符和制表符进行转码为：&#10和&#9。
+// ie会在使用innerHTML的时候对换行符和制表符进行转码为：&#10和&#9。
 function getShouldDecode (href: boolean): boolean {
   div = div || document.createElement('div')
   div.innerHTML = href ? `<a href="\n"/>` : `<div a="\n"/>`

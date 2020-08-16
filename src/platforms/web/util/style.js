@@ -2,6 +2,7 @@
 
 import { cached, extend, toObject } from 'shared/util'
 
+// 编译内嵌style属性，生成哈希表
 export const parseStyleText = cached(function (cssText) {
   const res = {}
   const listDelimiter = /;(?![^(]*\))/g

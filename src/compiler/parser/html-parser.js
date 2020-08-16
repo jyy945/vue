@@ -9,14 +9,14 @@
  * http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
  */
 
-import { unicodeRegExp } from "core/util/lang";
-import { makeMap, no } from "shared/util";
-import { isNonPhrasingTag } from "web/compiler/util";
+import {unicodeRegExp} from "core/util/lang";
+import {makeMap, no} from "shared/util";
+import {isNonPhrasingTag} from "web/compiler/util";
 
 // Regular Expressions for parsing tags and attributes
 // 匹配标签上的静态属性，例如： data = "123"
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
-// 匹配标签上的动态属性，例如v-bind:[attrname] = "name", :[attrname] = "name", @[methodName] = "click", #[slotName] = "slot"
+// 匹配标签上的动态属性，例如v-bind:[attrname]suffix = "name", :[attrname]suffix = "name", @[methodName]suffix = "click", #[slotName]suffix = "slot"
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;  // 匹配属性
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`; // 标签名正则
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
@@ -58,7 +58,18 @@ function decodeAttr(value, shouldDecodeNewlines) {
 }
 
 // 编译HTML
-export function parseHTML (html, options) {
+export function parseHTML(html, options) {
+  // 存储标签信息，格式为：
+  // {
+  //   tag: tagName,
+  //   lowerCasedTag: lowerCasedTagName,
+  //   attrs: {
+  //      name: attrName,
+  //      value: attrValue
+  //   }
+  //   start: start,
+  //   end: end
+  // }
   const stack = []
   const expectHTML = options.expectHTML
   const isUnaryTag = options.isUnaryTag || no // 是否自闭合标签
@@ -68,16 +79,15 @@ export function parseHTML (html, options) {
     lastTag // 开始的标签名，用于配合结束标签
   while (html) {
     last = html;
-    // 确保不是纯文本标签元素，比如script/style
+    // 若没有开始标签，并且不是纯文本标签元素，比如script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
       let textEnd = html.indexOf("<"); // 获取html标签<tagname>中<的位置
       // 若位置为0，则表示为开始标签；
-      // 否则表示为，已经解析开始标签
       if (textEnd === 0) {
         // 校验html注释
         if (comment.test(html)) {
           const commentEnd = html.indexOf("-->"); // 注释的结尾位置
-
+          // 若匹配到注释的结尾，则处理注释
           if (commentEnd >= 0) {
             // 若配置项中设置为保存html注释，则将html注释
             if (options.shouldKeepComment) {
@@ -106,7 +116,7 @@ export function parseHTML (html, options) {
           continue;
         }
 
-        // 查看是否为结束标签，是则对其进行解析
+        // 查看是否为非自闭合结束标签，是则对其进行解析
         const endTagMatch = html.match(endTag);
         if (endTagMatch) {
           const curIndex = index;
@@ -115,7 +125,7 @@ export function parseHTML (html, options) {
           continue;
         }
 
-        // 查看是否为开始标签，是则对其进行解析
+        // 查看是否为开始标签，是则对其进行解析,生成AST
         // 解析开始标签，包括获取属性信息以及是否为自闭合标签
         const startTagMatch = parseStartTag();
         // 解析开始标签，返回对象，例如{
@@ -126,7 +136,7 @@ export function parseHTML (html, options) {
         //    unarySlash：boolean （true: 自闭合标签，false：非自闭合标签)
         // }
         if (startTagMatch) {
-          handleStartTag(startTagMatch); // 处理开始标签
+          handleStartTag(startTagMatch); // 处理开始标签，对其中的属性进行标准化
           // 若为pre,textarea标签且第一字符为换行，则删除换行
           if (shouldIgnoreFirstNewline(startTagMatch.tagName, html)) {
             advance(1);
@@ -173,6 +183,7 @@ export function parseHTML (html, options) {
       let endTagLength = 0
       const stackedTag = lastTag.toLowerCase() // 开始的标签名
       // 结束标签正则
+      // 匹配标签内的文本和结束标签，例如<div>abc</div>，匹配abc</div>
       const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
       const rest = html.replace(reStackedTag, function (all, text, endTag) {
         endTagLength = endTag.length;
@@ -212,8 +223,8 @@ export function parseHTML (html, options) {
     html = html.substring(n);
   }
 
-  // 编译开始标签，获取标签中的属性
-  function parseStartTag () {
+  // 编译开始标签，获取标签中的属性，并生成AST
+  function parseStartTag() {
     const start = html.match(startTagOpen) // 正则截取标签名：["<div", "div"]
     if (start) {
       const match = {
@@ -246,6 +257,7 @@ export function parseHTML (html, options) {
   //    start: index
   //    unarySlash: boolean
   //  }
+  // 对其中的属性进行标准化
   function handleStartTag(match) {
     const tagName = match.tagName; // 标签名称
     const unarySlash = match.unarySlash; // 是否为自闭合标签
@@ -264,13 +276,13 @@ export function parseHTML (html, options) {
 
     const l = match.attrs.length;
     const attrs = new Array(l);
-    // 对属性进行遍历，获取属性名称和值
+    // 对属性进行遍历，获取属性名称和值，并将其标准化
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i];
       const value = args[3] || args[4] || args[5] || ""; // 获取属性的值
       const shouldDecodeNewlines = tagName === "a" && args[1] === "href"
-                                   ? options.shouldDecodeNewlinesForHref
-                                   : options.shouldDecodeNewlines;
+        ? options.shouldDecodeNewlinesForHref
+        : options.shouldDecodeNewlines;
       attrs[i] = {
         name: args[1],
         value: decodeAttr(value, shouldDecodeNewlines) // 对属性值进行解码
@@ -283,8 +295,14 @@ export function parseHTML (html, options) {
 
     // 若不是自闭合标签，将该标签进行缓存，用来匹配结束标签
     if (!unary) {
-      stack.push({tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end});
-      lastTag = tagName;
+      stack.push({
+        tag: tagName,
+        lowerCasedTag: tagName.toLowerCase(),
+        attrs: attrs,
+        start: match.start,
+        end: match.end
+      });
+      lastTag = tagName; // 保存当前标签
     }
 
     if (options.start) {

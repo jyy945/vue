@@ -80,11 +80,12 @@ export function parseFilters (exp: string): string {
     lastFilterIndex = i + 1
   }
 
-  // 若插值表达式中存在过滤器则
+  // 若插值表达式中存在过滤器，生成过滤器字符串
   if (filters) {
     for (i = 0; i < filters.length; i++) {
       expression = wrapFilter(expression, filters[i])
     }
+    // name | call("1") | demo("2") => _f("demo")(_f("call")(name, "1"), "2")
   }
 
   return expression
@@ -97,10 +98,11 @@ function wrapFilter (exp: string, filter: string): string {
   // 若有括号，则表示已经包含参数
   if (i < 0) {
     // _f: resolveFilter
-    return `_f("${filter}")(${exp})`
+    return `_f("${filter}")(${exp})` // 例如： name | capitalize => _f("capitalize")(name)
   } else {
     const name = filter.slice(0, i)
     const args = filter.slice(i + 1)
     return `_f("${name}")(${exp}${args !== ')' ? ',' + args : args}`
+    // 例如： name|capitalize("122","444") => _f("capitalize")(name, "122", "444")
   }
 }

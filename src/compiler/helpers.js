@@ -20,11 +20,13 @@ export function pluckModuleFunction<F: Function> (
     : []
 }
 
+// 添加属性prop
 export function addProp (el: ASTElement, name: string, value: string, range?: Range, dynamic?: boolean) {
   (el.props || (el.props = [])).push(rangeSetItem({ name, value, dynamic }, range))
   el.plain = false
 }
 
+// 添加属性
 export function addAttr (el: ASTElement, name: string, value: any, range?: Range, dynamic?: boolean) {
   const attrs = dynamic
     ? (el.dynamicAttrs || (el.dynamicAttrs = []))
@@ -66,6 +68,7 @@ function prependModifierMarker (symbol: string, name: string, dynamic?: boolean)
     : symbol + name // mark the event as captured
 }
 
+// 添加handler
 export function addHandler (
   el: ASTElement,
   name: string,
@@ -90,9 +93,7 @@ export function addHandler (
     )
   }
 
-  // normalize click.right and click.middle since they don't actually fire
-  // this is technically browser-specific, but at least for now browsers are
-  // the only target envs that have right/middle clicks.
+  // 右键事件
   if (modifiers.right) {
     if (dynamic) {
       name = `(${name})==='click'?'contextmenu':(${name})`
@@ -100,7 +101,9 @@ export function addHandler (
       name = 'contextmenu'
       delete modifiers.right
     }
-  } else if (modifiers.middle) {
+  }
+  // 按滚轮事件
+  else if (modifiers.middle) {
     if (dynamic) {
       name = `(${name})==='click'?'mouseup':(${name})`
     } else if (name === 'click') {
@@ -158,11 +161,13 @@ export function getRawBindingAttr (
     el.rawAttrsMap[name]
 }
 
+// 获取绑定的v-bind属性值
 export function getBindingAttr (
   el: ASTElement,
   name: string,
   getStatic?: boolean
 ): ?string {
+  // 获取动态绑定的属性值
   const dynamicValue =
     getAndRemoveAttr(el, ':' + name) ||
     getAndRemoveAttr(el, 'v-bind:' + name)
@@ -214,6 +219,7 @@ export function getAndRemoveAttrByRegex (
   }
 }
 
+// 将range添加到item中
 function rangeSetItem (
   item: any,
   range?: { start?: number, end?: number }

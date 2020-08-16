@@ -8,9 +8,10 @@ import {
   baseWarn
 } from 'compiler/helpers'
 
+// 转换节点过程
 function transformNode (el: ASTElement, options: CompilerOptions) {
   const warn = options.warn || baseWarn
-  const staticStyle = getAndRemoveAttr(el, 'style')
+  const staticStyle = getAndRemoveAttr(el, 'style') // 获取静态style属性值
   if (staticStyle) {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production') {
@@ -25,15 +26,23 @@ function transformNode (el: ASTElement, options: CompilerOptions) {
         )
       }
     }
+
+    // 编译获取标签内部的style属性值，
+    // {
+    //    width: '100px',
+    //    height: '100px'
+    // }
     el.staticStyle = JSON.stringify(parseStyleText(staticStyle))
   }
 
+  // 获取动态绑定的style
   const styleBinding = getBindingAttr(el, 'style', false /* getStatic */)
   if (styleBinding) {
     el.styleBinding = styleBinding
   }
 }
 
+// 生成数据
 function genData (el: ASTElement): string {
   let data = ''
   if (el.staticStyle) {

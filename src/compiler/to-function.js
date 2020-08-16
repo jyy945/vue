@@ -9,6 +9,7 @@ type CompiledFunctionResult = {
   staticRenderFns: Array<Function>;
 };
 
+// 创建方法
 function createFunction (code, errors) {
   try {
     return new Function(code)
@@ -56,7 +57,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
       return cache[key]
     }
 
-    // compile
+    // 编译template
     const compiled = compile(template, options)
 
     // check compilation errors/tips

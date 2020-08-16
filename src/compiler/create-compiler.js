@@ -4,8 +4,11 @@ import { extend } from 'shared/util'
 import { detectErrors } from './error-detector'
 import { createCompileToFunctionFn } from './to-function'
 
+// 创建一个编译器构造器
 export function createCompilerCreator (baseCompile: Function): Function {
+  // 编译器构造器
   return function createCompiler (baseOptions: CompilerOptions) {
+    // 创建编译器
     function compile (
       template: string,
       options?: CompilerOptions
@@ -36,19 +39,19 @@ export function createCompilerCreator (baseCompile: Function): Function {
             (tip ? tips : errors).push(data)
           }
         }
-        // merge custom modules
+        // 合并自定义modules
         if (options.modules) {
           finalOptions.modules =
             (baseOptions.modules || []).concat(options.modules)
         }
-        // merge custom directives
+        // 合并自定义指令
         if (options.directives) {
           finalOptions.directives = extend(
             Object.create(baseOptions.directives || null),
             options.directives
           )
         }
-        // copy other options
+        // 合并其他的配置项
         for (const key in options) {
           if (key !== 'modules' && key !== 'directives') {
             finalOptions[key] = options[key]

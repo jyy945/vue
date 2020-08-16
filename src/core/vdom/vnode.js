@@ -1,9 +1,9 @@
 /* @flow */
 
 export default class VNode {
-  tag: string | void;
+  tag: string | void; // 标签名称
   data: VNodeData | void;
-  children: ?Array<VNode>;
+  children: ?Array<VNode>; // 子节点
   text: string | void;
   elm: Node | void;
   ns: string | void;
@@ -11,7 +11,7 @@ export default class VNode {
   key: string | number | void;
   componentOptions: VNodeComponentOptions | void;
   componentInstance: Component | void; // component instance
-  parent: VNode | void; // component placeholder node
+  parent: VNode | void; // 父节点
 
   // strictly internal
   raw: boolean; // contains raw HTML? (server only)

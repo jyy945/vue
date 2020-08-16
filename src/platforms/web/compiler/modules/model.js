@@ -26,11 +26,13 @@ import {
 function preTransformNode (el: ASTElement, options: CompilerOptions) {
   if (el.tag === 'input') {
     const map = el.attrsMap
+    // 若没有v-model属性，则退出
     if (!map['v-model']) {
       return
     }
 
     let typeBinding
+    // 获取动态的type属性值
     if (map[':type'] || map['v-bind:type']) {
       typeBinding = getBindingAttr(el, 'type')
     }
@@ -85,6 +87,7 @@ function preTransformNode (el: ASTElement, options: CompilerOptions) {
   }
 }
 
+// 克隆AST节点
 function cloneASTElement (el) {
   return createASTElement(el.tag, el.attrsList.slice(), el.parent)
 }

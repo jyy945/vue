@@ -21,11 +21,12 @@ import {
   getAndRemoveAttrByRegex
 } from '../helpers'
 
+// @和v-on正则
 export const onRE = /^@|^v-on:/
 export const dirRE = process.env.VBIND_PROP_SHORTHAND
   ? /^v-|^@|^:|^\.|^#/
   : /^v-|^@|^:|^#/
-// v-for 属性值正则
+// 匹配v-for的值，例如v-for="name in|for arr"
 export const forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
 //
 export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
@@ -35,8 +36,10 @@ const stripParensRE = /^\(|\)$/g
 const dynamicArgRE = /^\[.*\]$/
 
 const argRE = /:(.*)$/
+// v-bind 正则
 export const bindRE = /^:|^\.|^v-bind:/
 const propBindRE = /^\./
+// 匹配修饰符，例如click.preventDefault.other
 const modifierRE = /\.[^.\]]+(?=[^\]]*$)/g
 
 const slotRE = /^v-slot(:|$)|^#/
@@ -62,7 +65,7 @@ let platformMustUseProp
 let platformGetTagNamespace
 let maybeComponent
 
-// 创建AST元素
+// 创建标签元素的AST，类型为1
 export function createASTElement (
   tag: string,
   attrs: Array<ASTAttr>,
@@ -218,6 +221,8 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments, // 是否保存注释
     outputSourceRange: options.outputSourceRange,
+    // 创建AST，处理v-pre、v-for、v-if、v-once属性；
+    // 若当前标签为自闭合标签，则执行closeElement；否则将当前AST保存到是stack
     start (tag, attrs, unary, start, end) {
       // 检查命名空间，若父标签包含ns，则继承，否则检查当前标签是否为svg或mathML命名空间
       const ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag)
@@ -293,7 +298,7 @@ export function parse (
         // structural directives
         processFor(element) // 处理v-for属性，会将处理后的v-for的值，放入element中
         processIf(element)  // 处理v-if属性，element新增if,exp,block\else\elseif
-        processOnce(element) // 处理v-once属性
+        processOnce(element) // 处理v-once属性，新增once属性
       }
 
       // 若不存在root节点，则将当前节点对象赋值给root
@@ -355,7 +360,7 @@ export function parse (
         // 若父元素节点为script或style，则text赋值为内部的文本；否则对文本进行解码
         text = isTextTag(currentParent) ? text : decodeHTMLCached(text)
       } else if (!children.length) {
-        // remove the whitespace-only node right after an opening tag
+        // 若不存在子元素，则设置为空字符
         text = ''
       } else if (whitespaceOption) {
         if (whitespaceOption === 'condense') {
@@ -369,6 +374,7 @@ export function parse (
         text = preserveWhitespace ? ' ' : ''
       }
       if (text) {
+        // 若不是格式化文本，并且设置为condense，则将连续的空格压缩为单个空间
         if (!inPre && whitespaceOption === 'condense') {
           // 将连续的空格压缩为单个空间
           text = text.replace(whitespaceRE, ' ')
@@ -376,6 +382,7 @@ export function parse (
         let res
         let child: ?ASTNode
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
+          // 带有表达式的文本
           child = {
             type: 2,
             expression: res.expression,
@@ -447,23 +454,29 @@ function processRawAttrs (el) {
   }
 }
 
+// 处理标签元素
 export function processElement (
   element: ASTElement,
   options: CompilerOptions
 ) {
+  // 设置key值，并检查key值是否放置到了template或transition-group标签等不需要key的标签
+  // 为元素添加key属性
   processKey(element)
 
-  // determine whether this is a plain element after
-  // removing structural attributes
+  // 是否为空的标签元素
   element.plain = (
     !element.key &&
     !element.scopedSlots &&
     !element.attrsList.length
   )
 
+  // 处理ref。若有则设置ref、refInFor属性
   processRef(element)
   processSlotContent(element)
   processSlotOutlet(element)
+  // 处理组件相关属性
+  // 若存在is，则设置component为is的属性值，
+  // 如存在inline-template， 则设置inlineTemplate属性值
   processComponent(element)
   for (let i = 0; i < transforms.length; i++) {
     element = transforms[i](element, options) || element
@@ -472,16 +485,20 @@ export function processElement (
   return element
 }
 
+// 处理key值
 function processKey (el) {
+  // 获取key值
   const exp = getBindingAttr(el, 'key')
   if (exp) {
     if (process.env.NODE_ENV !== 'production') {
+      // template 不可放key值
       if (el.tag === 'template') {
         warn(
           `<template> cannot be keyed. Place the key on real elements instead.`,
           getRawBindingAttr(el, 'key')
         )
       }
+      // 不可以为transition-group标签设置key值
       if (el.for) {
         const iterator = el.iterator2 || el.iterator1
         const parent = el.parent
@@ -499,6 +516,7 @@ function processKey (el) {
   }
 }
 
+// 处理ref,并查看该元素是否为for中的item
 function processRef (el) {
   const ref = getBindingAttr(el, 'ref')
   if (ref) {
@@ -570,6 +588,7 @@ function processIf (el) {
   const exp = getAndRemoveAttr(el, 'v-if') // v-if属性值
   if (exp) {
     el.if = exp
+    // 创建ifConditions，并向其添加条件对象
     addIfCondition(el, {
       exp: exp,
       block: el
@@ -619,6 +638,7 @@ function findPrevElement (children: Array<any>): ASTElement | void {
   }
 }
 
+// 创建ifConditions，并向其添加条件对象
 export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   if (!el.ifConditions) {
     el.ifConditions = []
@@ -626,6 +646,7 @@ export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
   el.ifConditions.push(condition)
 }
 
+// 处理v-once，添加once属性
 function processOnce (el) {
   const once = getAndRemoveAttr(el, 'v-once')
   if (once != null) {
@@ -784,6 +805,9 @@ function processSlotOutlet (el) {
   }
 }
 
+// 处理组件
+// 若存在is，则设置component为is的属性值，
+// 如存在inline-template， 则设置inlineTemplate属性值
 function processComponent (el) {
   let binding
   if ((binding = getBindingAttr(el, 'is'))) {
@@ -794,28 +818,39 @@ function processComponent (el) {
   }
 }
 
+// 处理标签的属性
 function processAttrs (el) {
   const list = el.attrsList
   let i, l, name, rawName, value, modifiers, syncGen, isDynamic
   for (i = 0, l = list.length; i < l; i++) {
-    name = rawName = list[i].name
-    value = list[i].value
+    name = rawName = list[i].name // 属性名称
+    value = list[i].value // 属性值
+    // 匹配属性的速记符
     if (dirRE.test(name)) {
-      // mark element as dynamic
+      // 标记该元素带有动态属性
       el.hasBindings = true
-      // modifiers
+      // 对修饰符进行编译，对匹配到的生成哈希表:
+      // {
+      //    preventDefault: true,
+      //    otherModifiers: true
+      // }
       modifiers = parseModifiers(name.replace(dirRE, ''))
       // support .foo shorthand syntax for the .prop modifier
       if (process.env.VBIND_PROP_SHORTHAND && propBindRE.test(name)) {
         (modifiers || (modifiers = {})).prop = true
         name = `.` + name.slice(1).replace(modifierRE, '')
       } else if (modifiers) {
+        // 截去修饰符，例如:name.prop => :name
         name = name.replace(modifierRE, '')
       }
+
+      // v-bind属性
       if (bindRE.test(name)) { // v-bind
+        // 去掉v-bind: 或:
         name = name.replace(bindRE, '')
         value = parseFilters(value)
-        isDynamic = dynamicArgRE.test(name)
+        isDynamic = dynamicArgRE.test(name) // 动态属性
+        // 若为动态属性，则截去[]
         if (isDynamic) {
           name = name.slice(1, -1)
         }
@@ -827,14 +862,19 @@ function processAttrs (el) {
             `The value for a v-bind expression cannot be empty. Found in "v-bind:${name}"`
           )
         }
+        // 处理修饰符
         if (modifiers) {
+          // 如果为prop的修饰符，则将-连字符转为驼峰
           if (modifiers.prop && !isDynamic) {
             name = camelize(name)
+            // 若bind的属性名为innerHtml，则改为innerHTML
             if (name === 'innerHtml') name = 'innerHTML'
           }
+          // 将bind的属性名改为驼峰式
           if (modifiers.camel && !isDynamic) {
             name = camelize(name)
           }
+          // TODO
           if (modifiers.sync) {
             syncGen = genAssignmentCode(value, `$event`)
             if (!isDynamic) {
@@ -887,7 +927,9 @@ function processAttrs (el) {
           name = name.slice(1, -1)
         }
         addHandler(el, name, value, modifiers, false, warn, list[i], isDynamic)
-      } else { // normal directives
+      }
+      //
+      else { // normal directives
         name = name.replace(dirRE, '')
         // parse arg
         const argMatch = name.match(argRE)
@@ -931,6 +973,7 @@ function processAttrs (el) {
   }
 }
 
+// 查找父标签是否包含for
 function checkInFor (el: ASTElement): boolean {
   let parent = el
   while (parent) {
@@ -942,8 +985,14 @@ function checkInFor (el: ASTElement): boolean {
   return false
 }
 
+// 编译修饰符，获取所有的修饰符
 function parseModifiers (name: string): Object | void {
   const match = name.match(modifierRE)
+  // 对匹配到的所有的修饰符进行遍历，生成对象，格式为：
+  // {
+  //    preventDefault: true,
+  //    otherModifiers: true
+  // }
   if (match) {
     const ret = {}
     match.forEach(m => { ret[m.slice(1)] = true })
